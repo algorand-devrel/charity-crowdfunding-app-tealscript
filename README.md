@@ -18,6 +18,22 @@ This starter full stack project has been generated using AlgoKit. See below for 
    - [Backend](backend/README.md) - Refer to the README for more information on how to work with smart contracts.
    - [Frontend](frontend/README.md) - Refer to the README for more information on how to work with the frontend application.
 
+# Demo
+
+Make sure you are in workspace mode for vscode. You can do this by going to the `charity-crowdfunding-algokit.code-workspace` file and clicking on the `workspace` button on the bottom right of the screen. This will open up the workspace in vscode.
+
+## Backend
+
+The `deploy-config.ts` file in `backend/smart_contracts/charity_crowdfunding` folder contains a test script that goes through the entire lifecycle of a charity crowdfunding app. You can run this script by running the following command in the terminal:
+
+```
+cd backend
+hit F5
+```
+
+## Frontend
+
+TODO
 
 ### Subsequently
 
