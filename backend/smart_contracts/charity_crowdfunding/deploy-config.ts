@@ -297,35 +297,33 @@ export async function deploy() {
     donator2AssetInfo['asset-holding']['asset-id'],
   )
 
-  //   // Fundraiser creator claim all Funds
-  //   result = app_client.call(claimFund, suggested_params=sp)
-  //   print(f"Total claimed Funds: {result.return_value}")
+  // Fundraiser creator claim all Funds
+  const result = await appClient.claimFund({}, { sendParams: { fee: algokit.transactionFees(2) } })
+  console.log('Total claimed Funds: ', Number(result.return) / 1_000_000, 'Algos')
 
-  //   // Check that the remaining app address balance == minimum balance
-  //   app_acct_info = app_client.get_application_account_info()
-  //   print(
-  //       f"App Balance: {app_acct_info['amount']} | Min Balance: {app_acct_info['min-balance']}"
-  //   )
+  // Check that the remaining app address balance == minimum balance
+  const appAcctInfo = await algod.accountInformation(app.appAddress).do()
+  const resultMessage = appAcctInfo.amount === appAcctInfo['min-balance'] ? 'balance == min-bal' : 'balance != min-bal'
+  console.log(resultMessage)
 
-  //   // Delete boxes
-  //   for box_name in boxes:
-  //       app_client.call(
-  //           delete_donator_info, donator=box_name, boxes=[(appid, box_name)]
-  //       )
-  //       print("Box Deleted")
-  //   boxes = app_client.get_box_names()
-  //   print(f"{len(boxes)} boxes found")
+  // Delete boxes
+  const boxes = await appClient.appClient.getBoxNames()
+  for (const boxName of boxes) {
+    const encodedName = algosdk.encodeAddress(boxName.nameRaw)
+    await appClient.deleteDonatorInfo(
+      { donator: encodedName },
+      { boxes: [{ appId: app.appId, name: boxName.nameRaw }] },
+    )
+    console.log('Box with name ', encodedName, 'is Deleted')
+  }
+  const boxes2 = await appClient.appClient.getBoxNames()
+  console.log(boxes2.length, ' boxes found')
 
-  //   // delete app
-  //   try:
-  //       app_client.delete()
-  //       print("Fundraiser Deleted")
-  //   except AlgodHTTPError as e:
-  //       print(e)
-
-  //   const method = 'hello'
-  //   const response = await appClient.hello({ name: 'world' })
-  //   console.log(`Called ${method} on ${app.name} (${app.appId}) with name = world, received: ${response.return}`)
-  // }
-  // }
+  // delete app
+  try {
+    await appClient.delete
+  } catch (e) {
+    console.log(e)
+  }
+  console.log('App Deleted')
 }
