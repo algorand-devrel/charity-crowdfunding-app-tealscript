@@ -100,7 +100,6 @@ def mintNFT(
                 TxnField.config_asset_unit_name: unit_name.get(),
                 TxnField.config_asset_name: asset_name.get(),
                 TxnField.config_asset_url: asset_url.get(),
-                TxnField.config_asset_reserve: Global.current_application_address(),
                 TxnField.fee: Int(0),
             }
         ),
