@@ -1,16 +1,16 @@
 #pragma version 8
-intcblock 0 1 127 4
-bytecblock 0x66756e645f726169736564 0x616374697665 0x 0x0001020304 0x646f6e61746f725f6e756d 0x6d696e5f646f6e6174696f6e 0x676f616c 0x7469746c65 0x151f7c75
+intcblock 0 1 127 5 18500
+bytecblock 0x 0x66756e645f726169736564 0x616374697665 0x7265776172645f6e66745f6964 0x0001020304 0x6d696e5f646f6e6174696f6e 0x646f6e61746f725f6e756d 0x00 0x151f7c75 0x676f616c 0x7469746c65
 txn NumAppArgs
 intc_0 // 0
 ==
 bnz main_l16
 txna ApplicationArgs 0
-pushbytes 0x7549cae4 // "opt_in_asset(asset)void"
+pushbytes 0x4494d6cf // "mintNFT(string,string,uint64,string)uint64"
 ==
 bnz main_l15
 txna ApplicationArgs 0
-pushbytes 0xe7a4ee87 // "bootstrap(string,string,uint64,uint64,axfer)void"
+pushbytes 0x86b92d44 // "bootstrap(string,string,uint64,uint64)void"
 ==
 bnz main_l14
 txna ApplicationArgs 0
@@ -18,7 +18,7 @@ pushbytes 0x1688c0d1 // "fund(pay,pay)void"
 ==
 bnz main_l13
 txna ApplicationArgs 0
-pushbytes 0x2eb626da // "claimNFT(axfer,asset)void"
+pushbytes 0xc60f6f8a // "claimNFT(axfer)void"
 ==
 bnz main_l12
 txna ApplicationArgs 0
@@ -115,7 +115,7 @@ intc_0 // 0
 !=
 &&
 assert
-callsub optinassetcaster_12
+callsub mintNFTcaster_12
 intc_1 // 1
 return
 main_l16:
@@ -124,7 +124,7 @@ intc_0 // NoOp
 ==
 bnz main_l20
 txn OnCompletion
-pushint 5 // DeleteApplication
+intc_3 // DeleteApplication
 ==
 bnz main_l19
 err
@@ -133,7 +133,7 @@ txn ApplicationID
 intc_0 // 0
 !=
 assert
-callsub delete_10
+callsub deleteApp_10
 intc_1 // 1
 return
 main_l20:
@@ -150,7 +150,7 @@ zeroimpl_0:
 proto 0 0
 intc_2 // 127
 bzero
-pushint 5 // 5
+intc_3 // 5
 
     zero_loop:
         int 1
@@ -172,20 +172,20 @@ retsub
 // read_impl
 readimpl_1:
 proto 2 1
-bytec_2 // ""
-store 14
+bytec_0 // ""
+store 18
 frame_dig -2
 intc_2 // 127
 /
-store 13
+store 17
 readimpl_1_l1:
-load 13
+load 17
 frame_dig -1
 intc_2 // 127
 /
 <=
 bz readimpl_1_l9
-load 13
+load 17
 frame_dig -2
 intc_2 // 127
 /
@@ -193,8 +193,8 @@ intc_2 // 127
 bnz readimpl_1_l8
 intc_0 // 0
 readimpl_1_l4:
-store 15
-load 13
+store 19
+load 17
 frame_dig -1
 intc_2 // 127
 /
@@ -202,22 +202,22 @@ intc_2 // 127
 bnz readimpl_1_l7
 intc_2 // 127
 readimpl_1_l6:
-store 16
-load 14
-bytec_3 // 0x0001020304
-load 13
+store 20
+load 18
+bytec 4 // 0x0001020304
+load 17
 intc_1 // 1
 extract3
 app_global_get
-load 15
-load 16
+load 19
+load 20
 substring3
 concat
-store 14
-load 13
+store 18
+load 17
 intc_1 // 1
 +
-store 13
+store 17
 b readimpl_1_l1
 readimpl_1_l7:
 frame_dig -1
@@ -230,20 +230,20 @@ intc_2 // 127
 %
 b readimpl_1_l4
 readimpl_1_l9:
-load 14
+load 18
 retsub
 
 // write_impl
 writeimpl_2:
 proto 2 0
 intc_0 // 0
-store 5
+store 9
 frame_dig -2
 intc_2 // 127
 /
-store 2
+store 6
 writeimpl_2_l1:
-load 2
+load 6
 frame_dig -2
 frame_dig -1
 len
@@ -252,7 +252,7 @@ intc_2 // 127
 /
 <=
 bz writeimpl_2_l12
-load 2
+load 6
 frame_dig -2
 intc_2 // 127
 /
@@ -260,8 +260,8 @@ intc_2 // 127
 bnz writeimpl_2_l11
 intc_0 // 0
 writeimpl_2_l4:
-store 3
-load 2
+store 7
+load 6
 frame_dig -2
 frame_dig -1
 len
@@ -272,60 +272,60 @@ intc_2 // 127
 bnz writeimpl_2_l10
 intc_2 // 127
 writeimpl_2_l6:
-store 4
-bytec_3 // 0x0001020304
-load 2
+store 8
+bytec 4 // 0x0001020304
+load 6
 intc_1 // 1
 extract3
-load 4
+load 8
 intc_2 // 127
 !=
-load 3
+load 7
 intc_0 // 0
 !=
 ||
 bnz writeimpl_2_l9
 intc_2 // 127
-store 6
+store 10
 frame_dig -1
-load 5
+load 9
 intc_2 // 127
 extract3
 writeimpl_2_l8:
 app_global_put
-load 5
-load 6
+load 9
+load 10
 +
-store 5
-load 2
+store 9
+load 6
 intc_1 // 1
 +
-store 2
+store 6
 b writeimpl_2_l1
 writeimpl_2_l9:
-load 4
-load 3
+load 8
+load 7
 -
-store 6
-bytec_3 // 0x0001020304
-load 2
+store 10
+bytec 4 // 0x0001020304
+load 6
 intc_1 // 1
 extract3
 app_global_get
 intc_0 // 0
-load 3
+load 7
 substring3
 frame_dig -1
-load 5
-load 6
+load 9
+load 10
 extract3
 concat
-bytec_3 // 0x0001020304
-load 2
+bytec 4 // 0x0001020304
+load 6
 intc_1 // 1
 extract3
 app_global_get
-load 4
+load 8
 intc_2 // 127
 substring3
 concat
@@ -349,86 +349,107 @@ retsub
 // create
 create_3:
 proto 0 0
-bytec_1 // "active"
+bytec_2 // "active"
 intc_0 // 0
 app_global_put
 callsub zeroimpl_0
-bytec 4 // "donator_num"
+bytec 6 // "donator_num"
 intc_0 // 0
 app_global_put
-bytec_0 // "fund_raised"
+bytec_1 // "fund_raised"
 intc_0 // 0
 app_global_put
-bytec 6 // "goal"
+bytec 9 // "goal"
 intc_0 // 0
 app_global_put
-bytec 7 // "title"
-bytec_2 // ""
+bytec_3 // "reward_nft_id"
+intc_0 // 0
+app_global_put
+bytec 10 // "title"
+bytec_0 // ""
 app_global_put
 retsub
 
-// opt_in_asset
-optinasset_4:
-proto 1 0
-txn Sender
-global CreatorAddress
-==
-// unauthorized
-assert
-itxn_begin
-intc_3 // axfer
-itxn_field TypeEnum
+// mintNFT
+mintNFT_4:
+proto 4 1
 intc_0 // 0
-itxn_field AssetAmount
-global CurrentApplicationAddress
-itxn_field AssetReceiver
-frame_dig -1
-txnas Assets
-itxn_field XferAsset
-itxn_submit
-retsub
-
-// bootstrap
-bootstrap_5:
-proto 5 0
-txn Sender
-global CreatorAddress
-==
-// unauthorized
-assert
-frame_dig -1
-gtxns AssetReceiver
-global CurrentApplicationAddress
-==
-assert
-frame_dig -1
-gtxns AssetAmount
 intc_0 // 0
->
-assert
-bytec 7 // "title"
-frame_dig -5
-extract 2 0
-app_global_put
-intc_0 // 0
-frame_dig -4
-extract 2 0
-callsub writeimpl_2
-bytec 6 // "goal"
-frame_dig -3
-app_global_put
-intc_0 // 0
-bytec 5 // "min_donation"
+bytec_3 // "reward_nft_id"
 app_global_get_ex
 store 1
 store 0
 load 1
+intc_0 // 0
+==
+// Reward NFT already minted
+assert
+itxn_begin
+pushint 3 // acfg
+itxn_field TypeEnum
+frame_dig -2
+itxn_field ConfigAssetTotal
+intc_0 // 0
+itxn_field ConfigAssetDecimals
+frame_dig -3
+extract 2 0
+itxn_field ConfigAssetUnitName
+frame_dig -4
+extract 2 0
+itxn_field ConfigAssetName
+frame_dig -1
+extract 2 0
+itxn_field ConfigAssetURL
+global CurrentApplicationAddress
+itxn_field ConfigAssetReserve
+intc_0 // 0
+itxn_field Fee
+itxn_submit
+bytec_3 // "reward_nft_id"
+itxn CreatedAssetID
+app_global_put
+itxn CreatedAssetID
+frame_bury 0
+retsub
+
+// bootstrap
+bootstrap_5:
+proto 4 0
+txn Sender
+global CreatorAddress
+==
+// unauthorized
+assert
+intc_0 // 0
+bytec_3 // "reward_nft_id"
+app_global_get_ex
+store 3
+store 2
+load 3
+assert
+bytec 10 // "title"
+frame_dig -4
+extract 2 0
+app_global_put
+intc_0 // 0
+frame_dig -3
+extract 2 0
+callsub writeimpl_2
+bytec 9 // "goal"
+frame_dig -2
+app_global_put
+intc_0 // 0
+bytec 5 // "min_donation"
+app_global_get_ex
+store 5
+store 4
+load 5
 !
 assert
 bytec 5 // "min_donation"
-frame_dig -2
+frame_dig -1
 app_global_put
-bytec_1 // "active"
+bytec_2 // "active"
 intc_1 // 1
 app_global_put
 retsub
@@ -436,86 +457,188 @@ retsub
 // fund
 fund_6:
 proto 2 0
-bytec_1 // "active"
+intc_0 // 0
+dupn 3
+bytec_0 // ""
+intc_0 // 0
+dup
+bytec_0 // ""
+dup
+intc_0 // 0
+dup
+bytec_0 // ""
+dup
+frame_dig -2
+gtxns Receiver
+global CurrentApplicationAddress
+==
+assert
+frame_dig -2
+gtxns Amount
+intc 4 // 18500
+>=
+// Payment amount not enough to cover Box MBR
+assert
+bytec_2 // "active"
 app_global_get
 intc_1 // 1
 ==
+// Fundraiser is not active
 assert
 frame_dig -1
 gtxns Receiver
 global CurrentApplicationAddress
 ==
+// Fund Payment is not sent to the fundraiser Contract
 assert
-frame_dig -1
-gtxns Amount
+frame_dig 0
 bytec 5 // "min_donation"
 app_global_get
 >=
+// Donation amount is less than the minimum donation amount
 assert
 txn Sender
-box_del
-pop
-txn Sender
-frame_dig -1
-gtxns Amount
+box_get
+store 12
+store 11
+load 12
+assert
+load 11
+frame_bury 4
+frame_dig 4
+intc_0 // 0
+extract_uint64
+frame_bury 1
+frame_dig 4
+pushint 64 // 64
+getbit
+frame_bury 3
+frame_dig 1
+intc_0 // 0
+>
+bnz fund_6_l2
+frame_dig 0
 itob
-box_put
-bytec 4 // "donator_num"
-bytec 4 // "donator_num"
+bytec 7 // 0x00
+intc_0 // 0
+frame_dig 3
+setbit
+concat
+frame_bury 4
+bytec 6 // "donator_num"
+bytec 6 // "donator_num"
 app_global_get
 intc_1 // 1
 +
 app_global_put
-bytec_0 // "fund_raised"
-bytec_0 // "fund_raised"
+b fund_6_l3
+fund_6_l2:
+frame_dig 1
+frame_dig 0
++
+frame_bury 2
+frame_dig 2
+itob
+bytec 7 // 0x00
+intc_0 // 0
+frame_dig 3
+setbit
+concat
+frame_bury 4
+fund_6_l3:
+bytec_1 // "fund_raised"
+bytec_1 // "fund_raised"
 app_global_get
-frame_dig -1
-gtxns Amount
+frame_dig 0
 +
 app_global_put
+txn Sender
+box_del
+pop
+txn Sender
+frame_dig 4
+box_put
 retsub
 
 // claimNFT
 claimNFT_7:
-proto 2 0
-txn Sender
-box_len
-store 8
-store 7
-load 8
-assert
+proto 1 0
+intc_0 // 0
+dup
+bytec_0 // ""
+intc_0 // 0
+dup
+bytec_0 // ""
+dup
 txn Sender
 box_get
-store 10
-store 9
-load 10
+store 14
+store 13
+load 14
 assert
-load 9
-btoi
+load 13
+frame_bury 2
+frame_dig 2
+pushint 64 // 64
+getbit
+frame_bury 0
+frame_dig 2
 intc_0 // 0
+extract_uint64
+frame_bury 1
+frame_dig 1
+bytec 5 // "min_donation"
+app_global_get
 >
+// Donator has not donated
 assert
-frame_dig -2
+frame_dig 0
+intc_0 // 0
+==
+// NFT already claimed
+assert
+frame_dig -1
+gtxns AssetSender
+txn Sender
+==
+assert
+frame_dig -1
 gtxns AssetReceiver
 txn Sender
 ==
 assert
-frame_dig -2
+frame_dig -1
 gtxns AssetAmount
 intc_0 // 0
 ==
 assert
 itxn_begin
-intc_3 // axfer
+pushint 4 // axfer
 itxn_field TypeEnum
 intc_1 // 1
 itxn_field AssetAmount
 txn Sender
 itxn_field AssetReceiver
-frame_dig -1
-txnas Assets
+bytec_3 // "reward_nft_id"
+app_global_get
 itxn_field XferAsset
 itxn_submit
+intc_1 // 1
+frame_bury 0
+frame_dig 1
+itob
+bytec 7 // 0x00
+intc_0 // 0
+frame_dig 0
+setbit
+concat
+frame_bury 2
+txn Sender
+box_del
+pop
+txn Sender
+frame_dig 2
+box_put
 retsub
 
 // claimFund
@@ -530,19 +653,21 @@ assert
 itxn_begin
 intc_1 // pay
 itxn_field TypeEnum
-bytec_0 // "fund_raised"
+bytec_1 // "fund_raised"
 app_global_get
 itxn_field Amount
 txn Sender
 itxn_field Receiver
+intc_0 // 0
+itxn_field Fee
 itxn_submit
-bytec_1 // "active"
+bytec_2 // "active"
 intc_0 // 0
 app_global_put
-bytec_0 // "fund_raised"
+bytec_1 // "fund_raised"
 app_global_get
 frame_bury 0
-bytec_0 // "fund_raised"
+bytec_1 // "fund_raised"
 intc_0 // 0
 app_global_put
 retsub
@@ -555,7 +680,7 @@ global CreatorAddress
 ==
 // unauthorized
 assert
-bytec_1 // "active"
+bytec_2 // "active"
 app_global_get
 intc_0 // 0
 ==
@@ -563,30 +688,41 @@ assert
 frame_dig -1
 txnas Accounts
 box_len
-store 12
-store 11
-load 12
+store 16
+store 15
+load 16
 assert
 frame_dig -1
 txnas Accounts
 box_del
 pop
+itxn_begin
+intc_1 // pay
+itxn_field TypeEnum
+intc 4 // 18500
+itxn_field Amount
+frame_dig -1
+txnas Accounts
+itxn_field Receiver
+intc_0 // 0
+itxn_field Fee
+itxn_submit
 retsub
 
-// delete
-delete_10:
+// deleteApp
+deleteApp_10:
 proto 0 0
 txn Sender
 global CreatorAddress
 ==
 // unauthorized
 assert
-bytec_1 // "active"
+bytec_2 // "active"
 app_global_get
 intc_0 // 0
 ==
 assert
-bytec_0 // "fund_raised"
+bytec_1 // "fund_raised"
 app_global_get
 intc_0 // 0
 ==
@@ -596,7 +732,7 @@ retsub
 // get_details
 getdetails_11:
 proto 0 1
-bytec_2 // ""
+bytec_0 // ""
 intc_0 // 0
 pushint 635 // 635
 intc_1 // 1
@@ -612,25 +748,43 @@ concat
 frame_bury 0
 retsub
 
-// opt_in_asset_caster
-optinassetcaster_12:
+// mintNFT_caster
+mintNFTcaster_12:
 proto 0 0
 intc_0 // 0
-txna ApplicationArgs 1
+bytec_0 // ""
+dup
 intc_0 // 0
-getbyte
+bytec_0 // ""
+txna ApplicationArgs 1
+frame_bury 1
+txna ApplicationArgs 2
+frame_bury 2
+txna ApplicationArgs 3
+btoi
+frame_bury 3
+txna ApplicationArgs 4
+frame_bury 4
+frame_dig 1
+frame_dig 2
+frame_dig 3
+frame_dig 4
+callsub mintNFT_4
 frame_bury 0
+bytec 8 // 0x151f7c75
 frame_dig 0
-callsub optinasset_4
+itob
+concat
+log
 retsub
 
 // bootstrap_caster
 bootstrapcaster_13:
 proto 0 0
-bytec_2 // ""
+bytec_0 // ""
 dup
 intc_0 // 0
-dupn 2
+dup
 txna ApplicationArgs 1
 frame_bury 0
 txna ApplicationArgs 2
@@ -641,20 +795,10 @@ frame_bury 2
 txna ApplicationArgs 4
 btoi
 frame_bury 3
-txn GroupIndex
-intc_1 // 1
--
-frame_bury 4
-frame_dig 4
-gtxns TypeEnum
-intc_3 // axfer
-==
-assert
 frame_dig 0
 frame_dig 1
 frame_dig 2
 frame_dig 3
-frame_dig 4
 callsub bootstrap_5
 retsub
 
@@ -690,22 +834,16 @@ retsub
 claimNFTcaster_15:
 proto 0 0
 intc_0 // 0
-dup
-txna ApplicationArgs 1
-intc_0 // 0
-getbyte
-frame_bury 1
 txn GroupIndex
 intc_1 // 1
 -
 frame_bury 0
 frame_dig 0
 gtxns TypeEnum
-intc_3 // axfer
+pushint 4 // axfer
 ==
 assert
 frame_dig 0
-frame_dig 1
 callsub claimNFT_7
 retsub
 
@@ -737,7 +875,7 @@ retsub
 // get_details_caster
 getdetailscaster_18:
 proto 0 0
-bytec_2 // ""
+bytec_0 // ""
 callsub getdetails_11
 frame_bury 0
 bytec 8 // 0x151f7c75

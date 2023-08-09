@@ -2,15 +2,27 @@
     "name": "charity_crowdfunding_app",
     "methods": [
         {
-            "name": "opt_in_asset",
+            "name": "mintNFT",
             "args": [
                 {
-                    "type": "asset",
-                    "name": "nft"
+                    "type": "string",
+                    "name": "asset_name"
+                },
+                {
+                    "type": "string",
+                    "name": "unit_name"
+                },
+                {
+                    "type": "uint64",
+                    "name": "nft_amount"
+                },
+                {
+                    "type": "string",
+                    "name": "asset_url"
                 }
             ],
             "returns": {
-                "type": "void"
+                "type": "uint64"
             }
         },
         {
@@ -31,10 +43,6 @@
                 {
                     "type": "uint64",
                     "name": "min_donate"
-                },
-                {
-                    "type": "axfer",
-                    "name": "nft_transfer"
                 }
             ],
             "returns": {
@@ -63,10 +71,6 @@
                 {
                     "type": "axfer",
                     "name": "optin"
-                },
-                {
-                    "type": "asset",
-                    "name": "nft"
                 }
             ],
             "returns": {
