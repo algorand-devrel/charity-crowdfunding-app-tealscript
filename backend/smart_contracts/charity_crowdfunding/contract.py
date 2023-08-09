@@ -59,17 +59,6 @@ app = Application("charity_crowdfunding_app", state=CrowdfundingState()).apply(
 )
 
 
-# @app.external(authorize=Authorize.only(Global.creator_address()))
-# def opt_in_asset(nft: abi.Asset) -> Expr:
-#     return InnerTxnBuilder.Execute(  # optin to Proof of Donation NFT
-#         {
-#             TxnField.type_enum: TxnType.AssetTransfer,
-#             TxnField.asset_amount: Int(0),
-#             TxnField.asset_receiver: Global.current_application_address(),
-#             TxnField.xfer_asset: nft.asset_id(),
-#         }
-#     )
-
 """
 Mint reward NFT. This method can only be called once. Must be created before bootstrap is called.
 """
