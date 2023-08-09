@@ -101,7 +101,7 @@ txn ApplicationID
 intc_0 // 0
 !=
 assert
-callsub deleteApp_8
+callsub delete_8
 intc_1 // 1
 return
 main_l16:
@@ -586,8 +586,8 @@ itxn_field Fee
 itxn_submit
 retsub
 
-// deleteApp
-deleteApp_8:
+// delete
+delete_8:
 proto 0 0
 txn Sender
 global CreatorAddress
@@ -604,18 +604,6 @@ app_global_get
 intc_0 // 0
 ==
 assert
-itxn_begin
-intc_1 // pay
-itxn_field TypeEnum
-intc_0 // 0
-itxn_field Amount
-global CreatorAddress
-itxn_field Receiver
-intc_0 // 0
-itxn_field Fee
-global CreatorAddress
-itxn_field CloseRemainderTo
-itxn_submit
 retsub
 
 // get_details

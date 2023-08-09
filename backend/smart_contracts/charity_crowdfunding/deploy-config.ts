@@ -1,7 +1,21 @@
 import * as algokit from '@algorandfoundation/algokit-utils'
 import { CharityCrowdfundingAppClient } from '../artifacts/charity_crowdfunding_app/client'
 import algosdk from 'algosdk'
-import { mintRewardNft } from './mint_nft'
+
+// Fundraiser Input Values (CHANGE THESE TO YOUR OWN)
+const title = 'Releasing Children from Poverty'
+const detail = 'Compassion International is a child sponsorship and Christian humanitarian aid organization.'
+const goal = algokit.algos(60)
+const minDonate = algokit.algos(10)
+
+// Reward NFT Input Values (CHANGE THESE TO YOUR OWN)
+const assetName = 'End Poverty Badge'
+const assetUnitName = 'EPB'
+const nftAmount = 2
+const assetUrl = 'https://www.compassion.com/'
+
+//Donation Amount (CHANGE TO YOUR OWN)
+const donationAmount = algokit.algos(20).valueOf()
 
 async function printBoxes(appClient: CharityCrowdfundingAppClient) {
   const boxes = await appClient.appClient.getBoxNames()
@@ -20,19 +34,6 @@ export async function deploy() {
   const algod = algokit.getAlgoClient()
   const indexer = algokit.getAlgoIndexerClient()
   const deployer = await algokit.getLocalNetDispenserAccount(algod)
-  // const deployer = await algokit.getAccount(
-  //   { config: algokit.getAccountConfigFromEnvironment('DEPLOYER'), fundWith: algokit.algos(100) },
-  //   algod,
-  // )
-
-  // await algokit.ensureFunded(
-  //   {
-  //     accountToFund: deployer,
-  //     minSpendingBalance: algokit.algos(2),
-  //     minFundingIncrement: algokit.algos(2),
-  //   },
-  //   algod,
-  // )
 
   const appClient = new CharityCrowdfundingAppClient(
     {
@@ -43,24 +44,6 @@ export async function deploy() {
     },
     algod,
   )
-
-  /** Uncomment if you want to idempotently deploy the contract */
-  // const app = await appClient.deploy({
-  //   onSchemaBreak: 'replace',
-  //   onUpdate: 'append',
-  // })
-
-  // // If app was just created fund the app account
-  // if (['create', 'replace'].includes(app.operationPerformed)) {
-  //   algokit.transferAlgos(
-  //     {
-  //       amount: algokit.algos(0.2),
-  //       from: deployer,
-  //       to: app.appAddress,
-  //     },
-  //     algod,
-  //   )
-  // }
 
   const app = await appClient.appClient.create()
 
@@ -73,37 +56,11 @@ export async function deploy() {
     algod,
   )
 
-  // Reward NFT Optin
-
-  // const sendParams: SendTransactionParams = {
-  //   suppressLog: false,
-  //   fee: new AlgoAmount({ microAlgos: sp.minFee * 2 }),
-  // }
-
-  // await appClient.optInAsset(
-  //   { nft: rewardNftId },
-  //   {
-  //     sendParams: {
-  //       fee: algokit.transactionFees(2), //covers inner transaction
-  //     },
-  //   },
-
   /*
   Boostrap Fundraise
   - set title, description, fundraise goal, minimum donation amount
   - mint Reward NFT
   */
-
-  const title = 'Releasing Children from Poverty'
-  const detail = 'Compassion International is a child sponsorship and Christian humanitarian aid organization.'
-  const goal = algokit.algos(2)
-  const minDonate = algokit.algos(0.1) // 0.1 ALGO
-
-  const assetName = 'End Poverty Badge'
-  const assetUnitName = 'EPB'
-  const nftAmount = 10_000
-  const assetUrl = 'https://www.compassion.com/'
-
   let sp = await algod.getTransactionParams().do()
 
   const payAssetMbrTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -198,9 +155,6 @@ export async function deploy() {
   )
 
   // Fund with donator1 and donator2
-  let sp2 = await algod.getTransactionParams().do()
-
-  const BOX_MBR = 2500 + (32 + 8) * 400 // = 18500
 
   /*
   First Donators need to opt in to the Reward NFT.
@@ -233,7 +187,7 @@ export async function deploy() {
     from: donator1.addr,
     suggestedParams: sp,
     to: app.appAddress,
-    amount: algokit.algos(1).valueOf(),
+    amount: donationAmount,
   })
 
   // Call fund method
@@ -251,12 +205,12 @@ export async function deploy() {
   // Donator 2 optin to reward NFT
   await algokit.sendTransaction({ transaction: optinTxns[1], from: donator2, sendParams: { suppressLog: true } }, algod)
 
-  // Donate 1 Algo
+  // Donate
   const donateTxn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
     from: donator2.addr,
     suggestedParams: sp,
     to: app.appAddress,
-    amount: algokit.algos(1).valueOf(),
+    amount: donationAmount,
   })
 
   // Call fund method
@@ -271,12 +225,12 @@ export async function deploy() {
 
   // Donator2 donates again. This time, no Box MBR is drained from the donation amount and the reward NFT is not sent again
 
-  // Donate 1 Algo
+  // Donate
   const donateTxn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
     from: donator2.addr,
     suggestedParams: sp,
     to: app.appAddress,
-    amount: algokit.algos(1).valueOf(),
+    amount: donationAmount,
   })
 
   await appClient3.fund(
@@ -335,10 +289,18 @@ export async function deploy() {
   console.log(boxes2.length, ' boxes found')
 
   // delete app
-  try {
-    await appClient.delete
-  } catch (e) {
-    console.log(e)
-  }
-  await console.log('App Deleted')
+  const deployerOptinTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+    from: deployer.addr,
+    suggestedParams: sp3,
+    to: deployer.addr,
+    amount: 0,
+    assetIndex: rewardNftID,
+  })
+
+  algokit.sendTransaction({ transaction: deployerOptinTxn, from: deployer, sendParams: { suppressLog: true } }, algod)
+
+  await appClient.appClient.delete({
+    sendParams: { suppressLog: true },
+  })
+  console.log('App Deleted')
 }

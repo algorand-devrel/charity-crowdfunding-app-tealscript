@@ -229,19 +229,10 @@ delete the fundraiser contract and send all remaining ALGOs to the creator. Only
 
 
 @app.delete(bare=True, authorize=Authorize.only(Global.creator_address()))
-def deleteApp() -> Expr:
+def delete() -> Expr:
     return Seq(
         Assert(app.state.active == Int(0)),
         Assert(app.state.fund_raised == Int(0)),
-        InnerTxnBuilder.Execute(
-            {
-                TxnField.type_enum: TxnType.Payment,
-                TxnField.amount: Int(0),
-                TxnField.receiver: Global.creator_address(),
-                TxnField.fee: Int(0),
-                TxnField.close_remainder_to: Global.creator_address(),
-            }
-        ),
     )
 
 
