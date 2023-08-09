@@ -141,19 +141,19 @@ retsub
 readimpl_1:
 proto 2 1
 bytec_1 // ""
-store 12
+store 14
 frame_dig -2
 intc_2 // 127
 /
-store 11
+store 13
 readimpl_1_l1:
-load 11
+load 13
 frame_dig -1
 intc_2 // 127
 /
 <=
 bz readimpl_1_l9
-load 11
+load 13
 frame_dig -2
 intc_2 // 127
 /
@@ -161,8 +161,8 @@ intc_2 // 127
 bnz readimpl_1_l8
 intc_0 // 0
 readimpl_1_l4:
-store 13
-load 11
+store 15
+load 13
 frame_dig -1
 intc_2 // 127
 /
@@ -170,22 +170,22 @@ intc_2 // 127
 bnz readimpl_1_l7
 intc_2 // 127
 readimpl_1_l6:
-store 14
-load 12
+store 16
+load 14
 bytec_3 // 0x0001020304
-load 11
+load 13
 intc_1 // 1
 extract3
 app_global_get
-load 13
-load 14
+load 15
+load 16
 substring3
 concat
-store 12
-load 11
+store 14
+load 13
 intc_1 // 1
 +
-store 11
+store 13
 b readimpl_1_l1
 readimpl_1_l7:
 frame_dig -1
@@ -198,7 +198,7 @@ intc_2 // 127
 %
 b readimpl_1_l4
 readimpl_1_l9:
-load 12
+load 14
 retsub
 
 // write_impl
@@ -420,8 +420,8 @@ retsub
 fund_5:
 proto 1 0
 intc_0 // 0
-dupn 2
-frame_dig 0
+frame_dig -1
+gtxns Amount
 intc_3 // 18500
 >
 // Not enough Algos to cover Box MBR
@@ -438,30 +438,25 @@ global CurrentApplicationAddress
 ==
 // Fund Payment is not sent to the fundraiser Contract
 assert
-frame_dig 0
+frame_dig -1
+gtxns Amount
 bytec 6 // "min_donation"
 app_global_get
 >=
 // Donation amount is less than the minimum donation amount
 assert
 txn Sender
-box_get
+box_len
 store 8
 store 7
 load 8
-assert
-load 7
-btoi
-frame_bury 1
-frame_dig 1
-intc_0 // 0
->
 bnz fund_5_l2
 txn Sender
 box_del
 pop
 txn Sender
-frame_dig 0
+frame_dig -1
+gtxns Amount
 itob
 box_put
 itxn_begin
@@ -474,6 +469,8 @@ itxn_field AssetReceiver
 bytec 5 // "reward_nft_id"
 app_global_get
 itxn_field XferAsset
+intc_0 // 0
+itxn_field Fee
 itxn_submit
 bytec 4 // "donator_num"
 bytec 4 // "donator_num"
@@ -484,28 +481,38 @@ app_global_put
 bytec_0 // "fund_raised"
 bytec_0 // "fund_raised"
 app_global_get
-frame_dig 0
+frame_dig -1
+gtxns Amount
 intc_3 // 18500
 -
 +
 app_global_put
 b fund_5_l3
 fund_5_l2:
-frame_dig 1
-frame_dig 0
+txn Sender
+box_get
+store 10
+store 9
+load 10
+assert
+load 9
+btoi
+frame_dig -1
+gtxns Amount
 +
-frame_bury 2
+frame_bury 0
 txn Sender
 box_del
 pop
 txn Sender
-frame_dig 2
+frame_dig 0
 itob
 box_put
 bytec_0 // "fund_raised"
 bytec_0 // "fund_raised"
 app_global_get
-frame_dig 0
+frame_dig -1
+gtxns Amount
 +
 app_global_put
 fund_5_l3:
@@ -558,9 +565,9 @@ assert
 frame_dig -1
 txnas Accounts
 box_len
-store 10
-store 9
-load 10
+store 12
+store 11
+load 12
 assert
 frame_dig -1
 txnas Accounts

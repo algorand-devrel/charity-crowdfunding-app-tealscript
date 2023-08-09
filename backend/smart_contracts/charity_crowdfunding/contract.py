@@ -122,15 +122,15 @@ The fund method will
 
 @app.external
 def fund(fund_pay: abi.PaymentTransaction) -> Expr:
-    fund_amount = abi.Uint64()
-    fund_amount.set(fund_pay.get().amount())
+    fund_amount = fund_pay.get().amount()
+
     total_fund = app.state.fund_raised
-    donation_amount = abi.Uint64()
+
     new_donation_amount = abi.Uint64()
 
     return Seq(
         Assert(
-            fund_amount.get() > app.state.box_mbr,
+            fund_amount > app.state.box_mbr,
             comment="Not enough Algos to cover Box MBR",
         ),
         Assert(app.state.active == Int(1), comment="Fundraiser is not active"),
@@ -139,32 +139,34 @@ def fund(fund_pay: abi.PaymentTransaction) -> Expr:
             comment="Fund Payment is not sent to the fundraiser Contract",
         ),
         Assert(
-            fund_amount.get() >= app.state.min_donation,
+            fund_amount >= app.state.min_donation.get(),
             comment="Donation amount is less than the minimum donation amount",
         ),
-        donation_amount.set(Btoi(app.state.donator_infos[Txn.sender()].get())),
-        If(donation_amount.get() > Int(0))
+        If(app.state.donator_infos[Txn.sender()].exists())
         .Then(
             Seq(
-                new_donation_amount.set(donation_amount.get() + fund_amount.get()),
+                new_donation_amount.set(
+                    Btoi(app.state.donator_infos[Txn.sender()].get()) + fund_amount
+                ),
                 app.state.donator_infos[Txn.sender()].set(new_donation_amount),
-                total_fund.set(total_fund.get() + fund_amount.get()),
+                total_fund.set(total_fund.get() + fund_amount),
             )
         )
         .Else(
             Seq(
-                app.state.donator_infos[Txn.sender()].set(fund_amount),
+                app.state.donator_infos[Txn.sender()].set(Itob(fund_amount)),
                 InnerTxnBuilder.Execute(
                     {
                         TxnField.type_enum: TxnType.AssetTransfer,
                         TxnField.asset_amount: Int(1),
                         TxnField.asset_receiver: Txn.sender(),
                         TxnField.xfer_asset: app.state.reward_nft_id.get(),
+                        TxnField.fee: Int(0),
                     }
                 ),
                 app.state.donator_num.increment(),
                 total_fund.set(
-                    total_fund.get() + (fund_amount.get() - app.state.box_mbr),
+                    total_fund.get() + (fund_amount - app.state.box_mbr),
                 ),
             ),
         ),

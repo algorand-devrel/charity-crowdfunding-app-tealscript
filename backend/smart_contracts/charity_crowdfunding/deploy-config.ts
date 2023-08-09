@@ -66,7 +66,7 @@ export async function deploy() {
 
   algokit.transferAlgos(
     {
-      amount: algokit.algos(0.2),
+      amount: algokit.algos(0.1),
       from: deployer,
       to: app.appAddress,
     },
@@ -239,7 +239,11 @@ export async function deploy() {
   // Call fund method
   await appClient2.fund(
     { fund_pay: donateTxn },
-    { assets: [rewardNftID], boxes: [{ appId: app.appId, name: donator1 }] },
+    {
+      sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
+      assets: [rewardNftID],
+      boxes: [{ appId: app.appId, name: donator1 }],
+    },
   )
 
   // Do the same for donator2
@@ -258,19 +262,36 @@ export async function deploy() {
   // Call fund method
   await appClient3.fund(
     { fund_pay: donateTxn2 },
-    { assets: [rewardNftID], boxes: [{ appId: app.appId, name: donator2 }] },
+    {
+      sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
+      assets: [rewardNftID],
+      boxes: [{ appId: app.appId, name: donator2 }],
+    },
   )
 
   // Donator2 donates again. This time, no Box MBR is drained from the donation amount and the reward NFT is not sent again
+
+  // Donate 1 Algo
+  const donateTxn3 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    from: donator2.addr,
+    suggestedParams: sp,
+    to: app.appAddress,
+    amount: algokit.algos(1).valueOf(),
+  })
+
   await appClient3.fund(
-    { fund_pay: donateTxn2 },
-    { assets: [rewardNftID], boxes: [{ appId: app.appId, name: donator2 }] },
+    { fund_pay: donateTxn3 },
+    {
+      sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
+      assets: [rewardNftID],
+      boxes: [{ appId: app.appId, name: donator2 }],
+    },
   )
 
   console.log('Donator 2, 3 funded the fundraiser')
 
   // Check created Boxes
-  printBoxes(appClient)
+  await printBoxes(appClient)
 
   const donator1AssetInfo = await algod.accountAssetInformation(donator1.addr, rewardNftID).do()
   console.log(
@@ -303,7 +324,10 @@ export async function deploy() {
     const encodedName = algosdk.encodeAddress(boxName.nameRaw)
     await appClient.deleteDonatorInfo(
       { donator: encodedName },
-      { boxes: [{ appId: app.appId, name: boxName.nameRaw }] },
+      {
+        sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
+        boxes: [{ appId: app.appId, name: boxName.nameRaw }],
+      },
     )
     console.log('Box with name ', encodedName, 'is Deleted')
   }
@@ -316,5 +340,5 @@ export async function deploy() {
   } catch (e) {
     console.log(e)
   }
-  console.log('App Deleted')
+  await console.log('App Deleted')
 }
