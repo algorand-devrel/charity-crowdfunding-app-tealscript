@@ -1,8 +1,5 @@
 import * as algokit from '@algorandfoundation/algokit-utils'
 import { CharityCrowdfundingAppClient } from '../artifacts/charity_crowdfunding_app/client'
-import { AppClientCallCoreParams } from '@algorandfoundation/algokit-utils/types/app-client'
-import { SendTransactionParams } from '@algorandfoundation/algokit-utils/types/transaction'
-import { AlgoAmount } from '@algorandfoundation/algokit-utils/types/amount'
 import algosdk from 'algosdk'
 import { mintRewardNft } from './mint_nft'
 
@@ -46,6 +43,8 @@ export async function deploy() {
     },
     algod,
   )
+
+  /** Uncomment if you want to idempotently deploy the contract */
   // const app = await appClient.deploy({
   //   onSchemaBreak: 'replace',
   //   onUpdate: 'append',
@@ -74,68 +73,70 @@ export async function deploy() {
     algod,
   )
 
-  // Mint Reward NFT
-  const rewardNftId = await mintRewardNft()
-
   // Reward NFT Optin
-  let sp = await algod.getTransactionParams().do()
 
   // const sendParams: SendTransactionParams = {
   //   suppressLog: false,
   //   fee: new AlgoAmount({ microAlgos: sp.minFee * 2 }),
   // }
 
-  await appClient.optInAsset(
-    { nft: rewardNftId },
-    {
-      sendParams: {
-        fee: algokit.transactionFees(2), //covers inner transaction
-      },
-    },
-  )
+  // await appClient.optInAsset(
+  //   { nft: rewardNftId },
+  //   {
+  //     sendParams: {
+  //       fee: algokit.transactionFees(2), //covers inner transaction
+  //     },
+  //   },
 
   /*
   Boostrap Fundraise
   - set title, description, fundraise goal, minimum donation amount
-  - transfer Reward NFT to smart contract
+  - mint Reward NFT
   */
 
-  const title = 'Save The Planet Fundraiser'
-  const detail = 'The world is getting sicker everyday and we need your help!'
+  const title = 'Releasing Children from Poverty'
+  const detail = 'Compassion International is a child sponsorship and Christian humanitarian aid organization.'
   const goal = algokit.algos(2)
   const minDonate = algokit.algos(0.1) // 0.1 ALGO
 
-  let sp2 = await algod.getTransactionParams().do()
+  const assetName = 'End Poverty Badge'
+  const assetUnitName = 'EPB'
+  const nftAmount = 10_000
+  const assetUrl = 'https://www.compassion.com/'
 
-  const rewardNftTransferTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+  let sp = await algod.getTransactionParams().do()
+
+  const payAssetMbrTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
     from: deployer.addr,
-    suggestedParams: sp2,
     to: app.appAddress,
-    amount: 10000,
-    assetIndex: rewardNftId,
+    amount: 100_000, // 0.1 ALGO to cover Asset MBR
+    suggestedParams: sp,
   })
 
-  // const rewardNftTransferTxnSigner = await algokit.getTransactionWithSigner(rewardNftTransferTxn, deployer)
+  const bootstrapOutput = await appClient.bootstrap(
+    {
+      title: title,
+      detail: detail,
+      goal: goal.valueOf(),
+      min_donate: minDonate.valueOf(),
+      mbr_pay: { transaction: payAssetMbrTxn, signer: deployer },
+      asset_name: assetName,
+      unit_name: assetUnitName,
+      nft_amount: nftAmount,
+      asset_url: assetUrl,
+    },
+    { sendParams: { fee: algokit.transactionFees(2), suppressLog: true } },
+  )
 
-  console.log('Fundraiser Details Before Bootstrap')
-  const global_states = await appClient.getGlobalState()
-  console.log('\t Fundraise Title: ', global_states['title']?.asString())
-  console.log('\t Fundraise Goal: ', global_states['goal']?.asNumber(), ' MicroAlgos')
-  console.log('\t Minimum Donation: ', global_states['min_donation']?.asNumber(), ' MicroAlgos')
+  console.log('The created Reward NFT ID is: ', Number(bootstrapOutput.return?.valueOf()))
 
-  await appClient.bootstrap({
-    title: title,
-    detail: detail,
-    goal: goal.valueOf(),
-    min_donate: minDonate.valueOf(),
-    nft_transfer: { transaction: rewardNftTransferTxn, signer: deployer },
-  })
-
-  console.log('Fundraiser Details after bootstrap')
-  const global_state2 = await appClient.getGlobalState()
-  console.log('\t Fundraise Title: ', global_state2['title']?.asString())
-  console.log('\t Fundraise Goal: ', global_state2['goal']?.asNumber(), ' MicroAlgos')
-  console.log('\t Minimum Donation: ', global_state2['min_donation']?.asNumber(), ' MicroAlgos')
+  console.log('\tFundraiser Details after bootstrap')
+  const global_state = await appClient.getGlobalState()
+  console.log('\t Fundraise Title: ', global_state['title']?.asString())
+  const FundraiserDescription = await appClient.getDetails({})
+  console.log('\t Fundraise Description: ', FundraiserDescription.return?.toString())
+  console.log('\t Fundraise Goal: ', global_state['goal']?.asNumber(), ' MicroAlgos')
+  console.log('\t Minimum Donation: ', global_state['min_donation']?.asNumber(), ' MicroAlgos')
 
   // Prepare account 2 and 3 app client
   const donator1 = await algokit.getAccount(
@@ -197,7 +198,7 @@ export async function deploy() {
   )
 
   // Fund with donator1 and donator2
-  sp = await algod.getTransactionParams().do()
+  let sp2 = await algod.getTransactionParams().do()
 
   const BOX_MBR = 2500 + (32 + 8) * 400 // = 18500
 
@@ -205,13 +206,13 @@ export async function deploy() {
   atomically group 3 transactions to fund
   1. payment txn to cover box MBR
   2. payment txn to fund the fundraiser
-  3. App Call calling the fund method
+  3. App Call calling the fund method which will also send the reward NFT to the donator
   */
 
   // Pay Box MBR
   const mbrPayTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
     from: donator1.addr,
-    suggestedParams: sp,
+    suggestedParams: sp2,
     to: app.appAddress,
     amount: algokit.microAlgos(BOX_MBR).valueOf(),
   })
@@ -225,7 +226,10 @@ export async function deploy() {
   })
 
   // Call fund method
-  await appClient2.fund({ mbr_pay: mbrPayTxn, fund_pay: donateTxn }, { boxes: [{ appId: app.appId, name: donator1 }] })
+  await appClient2.fund(
+    { mbr_pay: mbrPayTxn, fund_pay: donateTxn },
+    { assets: [], boxes: [{ appId: app.appId, name: donator1 }] },
+  )
 
   // Do the same for donator2
   const mbrPayTxn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({

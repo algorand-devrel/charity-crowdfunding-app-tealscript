@@ -10,7 +10,7 @@ pushbytes 0xf9fa4a48 // "bootstrap(string,string,uint64,uint64,pay,string,string
 ==
 bnz main_l11
 txna ApplicationArgs 0
-pushbytes 0x8945978e // "fund(pay,pay,asset)void"
+pushbytes 0x51531b75 // "fund(pay)void"
 ==
 bnz main_l10
 txna ApplicationArgs 0
@@ -418,19 +418,13 @@ retsub
 
 // fund
 fund_5:
-proto 3 0
+proto 1 0
 intc_0 // 0
 dupn 2
-frame_dig -3
-gtxns Receiver
-global CurrentApplicationAddress
-==
-assert
-frame_dig -3
-gtxns Amount
+frame_dig 0
 intc 4 // 18500
-==
-// Payment amount not enough to cover Box MBR
+>
+// Not enough Algos to cover Box MBR
 assert
 bytec_2 // "active"
 app_global_get
@@ -438,7 +432,7 @@ intc_1 // 1
 ==
 // Fundraiser is not active
 assert
-frame_dig -2
+frame_dig -1
 gtxns Receiver
 global CurrentApplicationAddress
 ==
@@ -690,13 +684,8 @@ retsub
 fundcaster_11:
 proto 0 0
 intc_0 // 0
-dupn 2
-txna ApplicationArgs 1
-intc_0 // 0
-getbyte
-frame_bury 2
 txn GroupIndex
-pushint 2 // 2
+intc_1 // 1
 -
 frame_bury 0
 frame_dig 0
@@ -704,18 +693,7 @@ gtxns TypeEnum
 intc_1 // pay
 ==
 assert
-txn GroupIndex
-intc_1 // 1
--
-frame_bury 1
-frame_dig 1
-gtxns TypeEnum
-intc_1 // pay
-==
-assert
 frame_dig 0
-frame_dig 1
-frame_dig 2
 callsub fund_5
 retsub
 

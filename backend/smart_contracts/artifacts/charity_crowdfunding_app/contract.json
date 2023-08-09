@@ -50,15 +50,7 @@
             "args": [
                 {
                     "type": "pay",
-                    "name": "mbr_pay"
-                },
-                {
-                    "type": "pay",
                     "name": "fund_pay"
-                },
-                {
-                    "type": "asset",
-                    "name": "nft"
                 }
             ],
             "returns": {

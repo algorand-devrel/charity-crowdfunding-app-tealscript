@@ -121,9 +121,7 @@ The fund method will
 
 
 @app.external
-def fund(
-    mbr_pay: abi.PaymentTransaction, fund_pay: abi.PaymentTransaction, nft: abi.Asset
-) -> Expr:
+def fund(fund_pay: abi.PaymentTransaction) -> Expr:
     fund_amount = abi.Uint64()
     fund_amount.set(fund_pay.get().amount())
     total_fund = app.state.fund_raised
@@ -131,10 +129,9 @@ def fund(
     new_donation_amount = abi.Uint64()
 
     return Seq(
-        Assert(mbr_pay.get().receiver() == Global.current_application_address()),
         Assert(
-            mbr_pay.get().amount() == app.state.box_mbr,
-            comment="Payment amount not enough to cover Box MBR",
+            fund_amount.get() > app.state.box_mbr,
+            comment="Not enough Algos to cover Box MBR",
         ),
         Assert(app.state.active == Int(1), comment="Fundraiser is not active"),
         Assert(
