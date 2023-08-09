@@ -1,17 +1,18 @@
 from beaker import *
 from beaker.lib.storage import BoxMapping
-from beaker.consts import (
-    BOX_BYTE_MIN_BALANCE,
-    BOX_FLAT_MIN_BALANCE,
-)
+from beaker.consts import BOX_BYTE_MIN_BALANCE, BOX_FLAT_MIN_BALANCE, ASSET_MIN_BALANCE
 from pyteal import *
-
-BOX_MBR = BOX_FLAT_MIN_BALANCE + (abi.size_of(abi.Address) + 8) * BOX_BYTE_MIN_BALANCE
 
 
 class DonatorRecord(abi.NamedTuple):
     donation_amount: abi.Field[abi.Uint64]
     nft_claimed: abi.Field[abi.Bool]
+
+
+BOX_MBR = (
+    BOX_FLAT_MIN_BALANCE
+    + (abi.size_of(DonatorRecord) + abi.size_of(abi.Address)) * BOX_BYTE_MIN_BALANCE
+)
 
 
 class CrowdfundingState:
@@ -66,6 +67,7 @@ Mint reward NFT. This method can only be called once. Must be created before boo
 
 @app.external
 def mintNFT(
+    mbr_pay: abi.PaymentTransaction,
     asset_name: abi.String,
     unit_name: abi.String,
     nft_amount: abi.Uint64,
@@ -77,6 +79,18 @@ def mintNFT(
         Assert(
             app.state.reward_nft_id.exists() == Int(0),
             comment="Reward NFT already minted",
+        ),
+        Assert(
+            mbr_pay.get().amount() == Int(ASSET_MIN_BALANCE),
+            comment="Not enough Algos to cover Asset MBR",
+        ),
+        Assert(
+            mbr_pay.get().receiver() == Global.current_application_address(),
+            comment="MBR Payment receiver is not the app",
+        ),
+        Assert(
+            mbr_pay.get().sender() == Txn.sender(),
+            comment="MBR Payment sender is not the App call sender",
         ),
         InnerTxnBuilder.Execute(
             {
@@ -124,6 +138,9 @@ The fund method will
 - check if the sender has donated before
 - if the sender has donated before, add the amount to the previous donation amount
 - if the sender has not donated before, set donation amount and set donated to true
+
+@param mbr_pay: The payment transaction that covers the Box MBR
+@param fund_pay: The payment transaction that covers the donation amount
 """
 
 
@@ -143,7 +160,7 @@ def fund(
     return Seq(
         Assert(mbr_pay.get().receiver() == Global.current_application_address()),
         Assert(
-            mbr_pay.get().amount() >= app.state.box_mbr,
+            mbr_pay.get().amount() == app.state.box_mbr,
             comment="Payment amount not enough to cover Box MBR",
         ),
         Assert(app.state.active == Int(1), comment="Fundraiser is not active"),
@@ -221,6 +238,13 @@ def claimNFT(optin: abi.AssetTransferTransaction) -> Expr:
     )
 
 
+"""
+Used to claim the funds raised by the fundraiser. Only the creator can claim the funds.
+
+@output: the amount of funds claimed
+"""
+
+
 @app.external(authorize=Authorize.only(Global.creator_address()))
 def claimFund(*, output: abi.Uint64) -> Expr:
     total_funds = app.state.fund_raised
@@ -237,6 +261,13 @@ def claimFund(*, output: abi.Uint64) -> Expr:
         output.set(total_funds),
         total_funds.set(Int(0)),
     )
+
+
+"""
+Delete the donator info box. Only the creator can delete the donator info.
+
+@param donator: the donator address of the box to be deleted
+"""
 
 
 # Currently can delete box before donator claims NFT. For production include time constraint logic for claiming the reward nft.
@@ -258,6 +289,11 @@ def delete_donator_info(donator: abi.Account) -> Expr:
     )
 
 
+"""
+delete the fundraiser contract. Only the creator can delete the fundraiser contract.
+"""
+
+
 # Should transfer remaining assets, remaing Algo to creator address before deleting for production
 @app.delete(bare=True, authorize=Authorize.only(Global.creator_address()))
 def deleteApp() -> Expr:
@@ -268,6 +304,14 @@ def deleteApp() -> Expr:
 
 
 ### Read Method ###
+
+"""
+get the fundraiser contract details
+
+@output: the details of the fundraiser contract
+"""
+
+
 @app.external(read_only=True)
 def get_details(*, output: abi.String) -> Expr:
     return output.set(

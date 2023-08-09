@@ -5,6 +5,10 @@
             "name": "mintNFT",
             "args": [
                 {
+                    "type": "pay",
+                    "name": "mbr_pay"
+                },
+                {
                     "type": "string",
                     "name": "asset_name"
                 },
