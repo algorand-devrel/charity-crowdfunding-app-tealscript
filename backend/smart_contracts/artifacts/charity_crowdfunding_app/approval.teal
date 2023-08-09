@@ -1,5 +1,5 @@
 #pragma version 8
-intcblock 0 1 127 5 18500
+intcblock 0 1 127 18500
 bytecblock 0x66756e645f726169736564 0x 0x616374697665 0x0001020304 0x646f6e61746f725f6e756d 0x7265776172645f6e66745f6964 0x6d696e5f646f6e6174696f6e 0x151f7c75 0x676f616c 0x7469746c65
 txn NumAppArgs
 intc_0 // 0
@@ -92,7 +92,7 @@ intc_0 // NoOp
 ==
 bnz main_l16
 txn OnCompletion
-intc_3 // DeleteApplication
+pushint 5 // DeleteApplication
 ==
 bnz main_l15
 err
@@ -118,7 +118,7 @@ zeroimpl_0:
 proto 0 0
 intc_2 // 127
 bzero
-intc_3 // 5
+pushint 5 // 5
 
     zero_loop:
         int 1
@@ -421,6 +421,11 @@ fund_5:
 proto 1 0
 intc_0 // 0
 dupn 2
+frame_dig 0
+intc_3 // 18500
+>
+// Not enough Algos to cover Box MBR
+assert
 bytec_2 // "active"
 app_global_get
 intc_1 // 1
@@ -480,7 +485,7 @@ bytec_0 // "fund_raised"
 bytec_0 // "fund_raised"
 app_global_get
 frame_dig 0
-intc 4 // 18500
+intc_3 // 18500
 -
 +
 app_global_put
@@ -564,7 +569,7 @@ pop
 itxn_begin
 intc_1 // pay
 itxn_field TypeEnum
-intc 4 // 18500
+intc_3 // 18500
 itxn_field Amount
 frame_dig -1
 txnas Accounts
