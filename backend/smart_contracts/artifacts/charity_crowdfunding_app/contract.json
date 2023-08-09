@@ -2,8 +2,24 @@
     "name": "charity_crowdfunding_app",
     "methods": [
         {
-            "name": "mintNFT",
+            "name": "bootstrap",
             "args": [
+                {
+                    "type": "string",
+                    "name": "title"
+                },
+                {
+                    "type": "string",
+                    "name": "detail"
+                },
+                {
+                    "type": "uint64",
+                    "name": "goal"
+                },
+                {
+                    "type": "uint64",
+                    "name": "min_donate"
+                },
                 {
                     "type": "pay",
                     "name": "mbr_pay"
@@ -30,30 +46,6 @@
             }
         },
         {
-            "name": "bootstrap",
-            "args": [
-                {
-                    "type": "string",
-                    "name": "title"
-                },
-                {
-                    "type": "string",
-                    "name": "detail"
-                },
-                {
-                    "type": "uint64",
-                    "name": "goal"
-                },
-                {
-                    "type": "uint64",
-                    "name": "min_donate"
-                }
-            ],
-            "returns": {
-                "type": "void"
-            }
-        },
-        {
             "name": "fund",
             "args": [
                 {
@@ -63,18 +55,10 @@
                 {
                     "type": "pay",
                     "name": "fund_pay"
-                }
-            ],
-            "returns": {
-                "type": "void"
-            }
-        },
-        {
-            "name": "claimNFT",
-            "args": [
+                },
                 {
-                    "type": "axfer",
-                    "name": "optin"
+                    "type": "asset",
+                    "name": "nft"
                 }
             ],
             "returns": {

@@ -4,14 +4,9 @@ from beaker.consts import BOX_BYTE_MIN_BALANCE, BOX_FLAT_MIN_BALANCE, ASSET_MIN_
 from pyteal import *
 
 
-class DonatorRecord(abi.NamedTuple):
-    donation_amount: abi.Field[abi.Uint64]
-    nft_claimed: abi.Field[abi.Bool]
-
-
 BOX_MBR = (
     BOX_FLAT_MIN_BALANCE
-    + (abi.size_of(DonatorRecord) + abi.size_of(abi.Address)) * BOX_BYTE_MIN_BALANCE
+    + (abi.size_of(abi.Uint64) + abi.size_of(abi.Address)) * BOX_BYTE_MIN_BALANCE
 )
 
 
@@ -49,7 +44,7 @@ class CrowdfundingState:
         stack_type=TealType.uint64, descr="ID of the reward NFT"
     )
 
-    donator_infos = BoxMapping(abi.Address, DonatorRecord)
+    donator_infos = BoxMapping(abi.Address, abi.Uint64)
 
     def __init__(self) -> None:
         self.box_mbr = Int(BOX_MBR)
@@ -59,14 +54,17 @@ app = Application("charity_crowdfunding_app", state=CrowdfundingState()).apply(
     unconditional_create_approval, initialize_global_state=True
 )
 
-
 """
-Mint reward NFT. This method can only be called once. Must be created before bootstrap is called.
+Mint Reward NFT, set fundraiser active, and set fundraise details.
 """
 
 
-@app.external
-def mintNFT(
+@app.external(authorize=Authorize.only(Global.creator_address()))
+def bootstrap(
+    title: abi.String,
+    detail: abi.String,
+    goal: abi.Uint64,
+    min_donate: abi.Uint64,
     mbr_pay: abi.PaymentTransaction,
     asset_name: abi.String,
     unit_name: abi.String,
@@ -77,11 +75,7 @@ def mintNFT(
 ) -> Expr:
     return Seq(
         Assert(
-            app.state.reward_nft_id.exists() == Int(0),
-            comment="Reward NFT already minted",
-        ),
-        Assert(
-            mbr_pay.get().amount() == Int(ASSET_MIN_BALANCE),
+            mbr_pay.get().amount() >= Int(ASSET_MIN_BALANCE),
             comment="Not enough Algos to cover Asset MBR",
         ),
         Assert(
@@ -92,6 +86,11 @@ def mintNFT(
             mbr_pay.get().sender() == Txn.sender(),
             comment="MBR Payment sender is not the App call sender",
         ),
+        app.state.title.set(title.get()),
+        app.state.detail.write(Int(0), detail.get()),
+        app.state.goal.set(goal.get()),
+        app.state.min_donation.set(min_donate.get()),
+        app.state.active.set(Int(1)),
         InnerTxnBuilder.Execute(
             {
                 TxnField.type_enum: TxnType.AssetConfig,
@@ -109,34 +108,12 @@ def mintNFT(
 
 
 """
-Set fundraiser active, and set fundraise details. Reward NFT must be minted before this method is called.
-"""
-
-
-@app.external(authorize=Authorize.only(Global.creator_address()))
-def bootstrap(
-    title: abi.String,
-    detail: abi.String,
-    goal: abi.Uint64,
-    min_donate: abi.Uint64,
-) -> Expr:
-    return Seq(
-        Assert(app.state.reward_nft_id.exists()),
-        app.state.title.set(title.get()),
-        app.state.detail.write(Int(0), detail.get()),
-        app.state.goal.set(goal.get()),
-        app.state.min_donation.set(min_donate.get()),
-        app.state.active.set(Int(1)),
-    )
-
-
-"""
 The fund method will
 - check if the sender sent the correct mbr_pay, and funded more than min_donation
 - check if the fundraiser is active
 - check if the sender has donated before
 - if the sender has donated before, add the amount to the previous donation amount
-- if the sender has not donated before, set donation amount and set donated to true
+- if the sender has not donated before, set donation amount and send reward NFT
 
 @param mbr_pay: The payment transaction that covers the Box MBR
 @param fund_pay: The payment transaction that covers the donation amount
@@ -145,16 +122,13 @@ The fund method will
 
 @app.external
 def fund(
-    mbr_pay: abi.PaymentTransaction,
-    fund_pay: abi.PaymentTransaction,
+    mbr_pay: abi.PaymentTransaction, fund_pay: abi.PaymentTransaction, nft: abi.Asset
 ) -> Expr:
     fund_amount = abi.Uint64()
     fund_amount.set(fund_pay.get().amount())
     total_fund = app.state.fund_raised
     donation_amount = abi.Uint64()
     new_donation_amount = abi.Uint64()
-    nft_claimed = abi.Bool()
-    donator_record = DonatorRecord()
 
     return Seq(
         Assert(mbr_pay.get().receiver() == Global.current_application_address()),
@@ -172,68 +146,30 @@ def fund(
             comment="Donation amount is less than the minimum donation amount",
         ),
         Seq(
-            donator_record.decode(app.state.donator_infos[Txn.sender()].get()),
-            donation_amount.set(donator_record.donation_amount),
-            nft_claimed.set(donator_record.nft_claimed),
+            donation_amount.set(Btoi(app.state.donator_infos[Txn.sender()].get())),
             If(donation_amount.get() > Int(0))
             .Then(
                 Seq(
                     new_donation_amount.set(donation_amount.get() + fund_amount.get()),
-                    donator_record.set(
-                        new_donation_amount,
-                        nft_claimed,
-                    ),
+                    app.state.donator_infos[Txn.sender()].set(new_donation_amount),
                 )
             )
             .Else(
                 Seq(
-                    donator_record.set(fund_amount, nft_claimed),
+                    app.state.donator_infos[Txn.sender()].set(Itob(fund_amount.get())),
+                    InnerTxnBuilder.Execute(
+                        {
+                            TxnField.type_enum: TxnType.AssetTransfer,
+                            TxnField.asset_amount: Int(1),
+                            TxnField.asset_receiver: Txn.sender(),
+                            TxnField.xfer_asset: app.state.reward_nft_id.get(),
+                        }
+                    ),
                     app.state.donator_num.increment(),
                 )
             ),
             total_fund.set(total_fund.get() + fund_amount.get()),
-            app.state.donator_infos[Txn.sender()].set(donator_record.encode()),
         ),
-    )
-
-
-"""
-Donators can claim their NFTs if they have donated and have not claimed their NFTs.
-
-@param optin: the optin transaction of the NFT
-"""
-
-
-@app.external
-def claimNFT(optin: abi.AssetTransferTransaction) -> Expr:
-    donator_box = app.state.donator_infos[Txn.sender()]
-    claimed = abi.Bool()
-    donation_amount = abi.Uint64()
-    donator_record = DonatorRecord()
-
-    return Seq(
-        donator_record.decode(donator_box.get()),
-        claimed.set(donator_record.nft_claimed),
-        donation_amount.set(donator_record.donation_amount),
-        Assert(
-            donation_amount.get() > app.state.min_donation,
-            comment="Donator has not donated",
-        ),
-        Assert(claimed.get() == Int(0), comment="NFT already claimed"),
-        Assert(optin.get().asset_sender() == Txn.sender()),
-        Assert(optin.get().asset_receiver() == Txn.sender()),
-        Assert(optin.get().asset_amount() == Int(0)),
-        InnerTxnBuilder.Execute(
-            {
-                TxnField.type_enum: TxnType.AssetTransfer,
-                TxnField.asset_amount: Int(1),
-                TxnField.asset_receiver: Txn.sender(),
-                TxnField.xfer_asset: app.state.reward_nft_id.get(),
-            }
-        ),
-        claimed.set(True),
-        donator_record.set(donation_amount, claimed),
-        app.state.donator_infos[Txn.sender()].set(donator_record.encode()),
     )
 
 
@@ -269,7 +205,6 @@ Delete the donator info box. Only the creator can delete the donator info.
 """
 
 
-# Currently can delete box before donator claims NFT. For production include time constraint logic for claiming the reward nft.
 @app.external(authorize=Authorize.only(Global.creator_address()))
 def delete_donator_info(donator: abi.Account) -> Expr:
     donator_box = app.state.donator_infos[donator.address()]
@@ -289,16 +224,24 @@ def delete_donator_info(donator: abi.Account) -> Expr:
 
 
 """
-delete the fundraiser contract. Only the creator can delete the fundraiser contract.
+delete the fundraiser contract and send all remaining ALGOs to the creator. Only the creator can delete the fundraiser contract.
 """
 
 
-# Should transfer remaining assets, remaing Algo to creator address before deleting for production
 @app.delete(bare=True, authorize=Authorize.only(Global.creator_address()))
 def deleteApp() -> Expr:
     return Seq(
         Assert(app.state.active == Int(0)),
         Assert(app.state.fund_raised == Int(0)),
+        InnerTxnBuilder.Execute(
+            {
+                TxnField.type_enum: TxnType.Payment,
+                TxnField.amount: Int(0),
+                TxnField.receiver: Global.creator_address(),
+                TxnField.fee: Int(0),
+                TxnField.close_remainder_to: Global.creator_address(),
+            }
+        ),
     )
 
 
