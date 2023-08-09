@@ -149,6 +149,7 @@ def fund(fund_pay: abi.PaymentTransaction) -> Expr:
                 Seq(
                     new_donation_amount.set(donation_amount.get() + fund_amount.get()),
                     app.state.donator_infos[Txn.sender()].set(new_donation_amount),
+                    total_fund.set(total_fund.get() + fund_amount.get()),
                 )
             )
             .Else(
@@ -163,9 +164,11 @@ def fund(fund_pay: abi.PaymentTransaction) -> Expr:
                         }
                     ),
                     app.state.donator_num.increment(),
-                )
+                    total_fund.set(
+                        total_fund.get() + (fund_amount.get() - app.state.box_mbr),
+                    ),
+                ),
             ),
-            total_fund.set(total_fund.get() + fund_amount.get()),
         ),
     )
 

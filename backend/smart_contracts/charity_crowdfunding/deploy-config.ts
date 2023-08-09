@@ -10,7 +10,7 @@ async function printBoxes(appClient: CharityCrowdfundingAppClient) {
     const encodedName = algosdk.encodeAddress(boxName.nameRaw)
     console.log('box Name:', encodedName)
     const content = await appClient.appClient.getBoxValueFromABIType(boxName, new algosdk.ABIUintType(64))
-    console.log(Number(content) / 1_000_000, 'ALGO')
+    console.log('Donation Amount: ', Number(content) / 1_000_000, 'ALGO')
   }
 }
 
@@ -127,8 +127,8 @@ export async function deploy() {
     },
     { sendParams: { fee: algokit.transactionFees(2), suppressLog: true } },
   )
-
-  console.log('The created Reward NFT ID is: ', Number(bootstrapOutput.return?.valueOf()))
+  const rewardNftID = Number(bootstrapOutput.return?.valueOf())
+  console.log('The created Reward NFT ID is: ', rewardNftID)
 
   console.log('\tFundraiser Details after bootstrap')
   const global_state = await appClient.getGlobalState()
@@ -203,19 +203,30 @@ export async function deploy() {
   const BOX_MBR = 2500 + (32 + 8) * 400 // = 18500
 
   /*
-  atomically group 3 transactions to fund
-  1. payment txn to cover box MBR
-  2. payment txn to fund the fundraiser
-  3. App Call calling the fund method which will also send the reward NFT to the donator
+  First Donators need to opt in to the Reward NFT.
+
+  Then atomically group 2 transactions to fund
+  1. payment txn to fund the fundraiser. For first time donators, 0.0185 ALGO will be used for Box MBR. 
+  2. App Call calling the fund method which will also send the reward NFT to the donator
   */
 
-  // Pay Box MBR
-  const mbrPayTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: donator1.addr,
-    suggestedParams: sp2,
-    to: app.appAddress,
-    amount: algokit.microAlgos(BOX_MBR).valueOf(),
-  })
+  const sp3 = await algod.getTransactionParams().do()
+  const optinTxns: algosdk.Transaction[] = []
+
+  for (const donator of [donator1, donator2]) {
+    const optinTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+      from: donator.addr,
+      suggestedParams: sp3,
+      to: donator.addr,
+      amount: 0,
+      assetIndex: rewardNftID,
+    })
+
+    optinTxns.push(optinTxn)
+  }
+
+  // Donator 1 optin to reward NFT
+  await algokit.sendTransaction({ transaction: optinTxns[0], from: donator1, sendParams: { suppressLog: true } }, algod)
 
   // Donate 1 Algo
   const donateTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -227,17 +238,14 @@ export async function deploy() {
 
   // Call fund method
   await appClient2.fund(
-    { mbr_pay: mbrPayTxn, fund_pay: donateTxn },
-    { assets: [], boxes: [{ appId: app.appId, name: donator1 }] },
+    { fund_pay: donateTxn },
+    { assets: [rewardNftID], boxes: [{ appId: app.appId, name: donator1 }] },
   )
 
   // Do the same for donator2
-  const mbrPayTxn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-    from: donator2.addr,
-    suggestedParams: sp,
-    to: app.appAddress,
-    amount: algokit.microAlgos(BOX_MBR).valueOf(),
-  })
+
+  // Donator 2 optin to reward NFT
+  await algokit.sendTransaction({ transaction: optinTxns[1], from: donator2, sendParams: { suppressLog: true } }, algod)
 
   // Donate 1 Algo
   const donateTxn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -249,8 +257,14 @@ export async function deploy() {
 
   // Call fund method
   await appClient3.fund(
-    { mbr_pay: mbrPayTxn2, fund_pay: donateTxn2 },
-    { boxes: [{ appId: app.appId, name: donator2 }] },
+    { fund_pay: donateTxn2 },
+    { assets: [rewardNftID], boxes: [{ appId: app.appId, name: donator2 }] },
+  )
+
+  // Donator2 donates again. This time, no Box MBR is drained from the donation amount and the reward NFT is not sent again
+  await appClient3.fund(
+    { fund_pay: donateTxn2 },
+    { assets: [rewardNftID], boxes: [{ appId: app.appId, name: donator2 }] },
   )
 
   console.log('Donator 2, 3 funded the fundraiser')
@@ -258,42 +272,15 @@ export async function deploy() {
   // Check created Boxes
   printBoxes(appClient)
 
-  // Donator 1 and 2 claim Reward NFT
-  const sp3 = await algod.getTransactionParams().do()
-  const optinTxns: algosdk.Transaction[] = []
-
-  for (const donator of [donator1, donator2]) {
-    const optinTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-      from: donator.addr,
-      suggestedParams: sp3,
-      to: donator.addr,
-      amount: 0,
-      assetIndex: rewardNftId,
-    })
-
-    optinTxns.push(optinTxn)
-  }
-  // Donator1 calls claimNFT
-
-  await appClient2.claimNft(
-    { optin: optinTxns[0], nft: rewardNftId },
-    { sendParams: { fee: algokit.transactionFees(2) }, boxes: [donator1] },
-  ) // cover txn fee of optin and the inner txn sending the nft to the account
-
-  const donator1AssetInfo = await algod.accountAssetInformation(donator1.addr, rewardNftId).do()
+  const donator1AssetInfo = await algod.accountAssetInformation(donator1.addr, rewardNftID).do()
   console.log(
     'Donator 1 received ',
     donator1AssetInfo['asset-holding'].amount,
     'asset with id ',
     donator1AssetInfo['asset-holding']['asset-id'],
   )
-  // Donator2 calls claimNFT
-  await appClient3.claimNft(
-    { optin: optinTxns[1], nft: rewardNftId },
-    { sendParams: { fee: algokit.transactionFees(2) }, boxes: [donator2] },
-  ) // cover txn fee of optin and the inner txn sending the nft to the account
 
-  const donator2AssetInfo = await algod.accountAssetInformation(donator1.addr, rewardNftId).do()
+  const donator2AssetInfo = await algod.accountAssetInformation(donator2.addr, rewardNftID).do()
   console.log(
     'Donator 2 received ',
     donator2AssetInfo['asset-holding'].amount,

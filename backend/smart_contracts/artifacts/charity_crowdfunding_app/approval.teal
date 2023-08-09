@@ -1,6 +1,6 @@
 #pragma version 8
 intcblock 0 1 127 5 18500
-bytecblock 0x 0x66756e645f726169736564 0x616374697665 0x0001020304 0x646f6e61746f725f6e756d 0x7265776172645f6e66745f6964 0x6d696e5f646f6e6174696f6e 0x151f7c75 0x676f616c 0x7469746c65
+bytecblock 0x66756e645f726169736564 0x 0x616374697665 0x0001020304 0x646f6e61746f725f6e756d 0x7265776172645f6e66745f6964 0x6d696e5f646f6e6174696f6e 0x151f7c75 0x676f616c 0x7469746c65
 txn NumAppArgs
 intc_0 // 0
 ==
@@ -140,7 +140,7 @@ retsub
 // read_impl
 readimpl_1:
 proto 2 1
-bytec_0 // ""
+bytec_1 // ""
 store 12
 frame_dig -2
 intc_2 // 127
@@ -324,7 +324,7 @@ callsub zeroimpl_0
 bytec 4 // "donator_num"
 intc_0 // 0
 app_global_put
-bytec_1 // "fund_raised"
+bytec_0 // "fund_raised"
 intc_0 // 0
 app_global_put
 bytec 8 // "goal"
@@ -334,7 +334,7 @@ bytec 5 // "reward_nft_id"
 intc_0 // 0
 app_global_put
 bytec 9 // "title"
-bytec_0 // ""
+bytec_1 // ""
 app_global_put
 retsub
 
@@ -421,11 +421,6 @@ fund_5:
 proto 1 0
 intc_0 // 0
 dupn 2
-frame_dig 0
-intc 4 // 18500
->
-// Not enough Algos to cover Box MBR
-assert
 bytec_2 // "active"
 app_global_get
 intc_1 // 1
@@ -481,6 +476,14 @@ app_global_get
 intc_1 // 1
 +
 app_global_put
+bytec_0 // "fund_raised"
+bytec_0 // "fund_raised"
+app_global_get
+frame_dig 0
+intc 4 // 18500
+-
++
+app_global_put
 b fund_5_l3
 fund_5_l2:
 frame_dig 1
@@ -494,13 +497,13 @@ txn Sender
 frame_dig 2
 itob
 box_put
-fund_5_l3:
-bytec_1 // "fund_raised"
-bytec_1 // "fund_raised"
+bytec_0 // "fund_raised"
+bytec_0 // "fund_raised"
 app_global_get
 frame_dig 0
 +
 app_global_put
+fund_5_l3:
 retsub
 
 // claimFund
@@ -515,7 +518,7 @@ assert
 itxn_begin
 intc_1 // pay
 itxn_field TypeEnum
-bytec_1 // "fund_raised"
+bytec_0 // "fund_raised"
 app_global_get
 itxn_field Amount
 txn Sender
@@ -526,10 +529,10 @@ itxn_submit
 bytec_2 // "active"
 intc_0 // 0
 app_global_put
-bytec_1 // "fund_raised"
+bytec_0 // "fund_raised"
 app_global_get
 frame_bury 0
-bytec_1 // "fund_raised"
+bytec_0 // "fund_raised"
 intc_0 // 0
 app_global_put
 retsub
@@ -584,7 +587,7 @@ app_global_get
 intc_0 // 0
 ==
 assert
-bytec_1 // "fund_raised"
+bytec_0 // "fund_raised"
 app_global_get
 intc_0 // 0
 ==
@@ -606,7 +609,7 @@ retsub
 // get_details
 getdetails_9:
 proto 0 1
-bytec_0 // ""
+bytec_1 // ""
 intc_0 // 0
 pushint 635 // 635
 intc_1 // 1
@@ -626,14 +629,14 @@ retsub
 bootstrapcaster_10:
 proto 0 0
 intc_0 // 0
-bytec_0 // ""
+bytec_1 // ""
 dup
 intc_0 // 0
 dupn 2
-bytec_0 // ""
+bytec_1 // ""
 dup
 intc_0 // 0
-bytec_0 // ""
+bytec_1 // ""
 txna ApplicationArgs 1
 frame_bury 1
 txna ApplicationArgs 2
@@ -725,7 +728,7 @@ retsub
 // get_details_caster
 getdetailscaster_14:
 proto 0 0
-bytec_0 // ""
+bytec_1 // ""
 callsub getdetails_9
 frame_bury 0
 bytec 7 // 0x151f7c75
