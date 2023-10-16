@@ -12,7 +12,7 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
   const isKmd = (provider: Provider) => provider.metadata.name.toLowerCase() === 'kmd'
 
   return (
-    <dialog id="connect_wallet_modal" className={`modal ${openModal ? 'modal-open' : ''}`}style={{ display: openModal ? 'block' : 'none' }}>
+    <dialog id="connect_wallet_modal" className={`modal ${openModal ? 'modal-open' : ''}`}>
       <form method="dialog" className="modal-box">
         <h3 className="font-bold text-2xl">Select wallet provider</h3>
 
@@ -46,7 +46,7 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
             ))}
         </div>
 
-        <div className="modal-action grid">
+        <div className="modal-action ">
           <button
             data-test-id="close-wallet-modal"
             className="btn"
