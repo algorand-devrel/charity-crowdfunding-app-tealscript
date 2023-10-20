@@ -4,7 +4,7 @@ import { useWallet } from '@txnlab/use-wallet'
 import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
-import { CharityCrowdfundingAppClient } from '../contracts/charity_crowdfunding_app'
+import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
 import { getAlgodConfigFromViteEnvironment, getIndexerConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
 
 interface FundraiseItemProps {
@@ -122,7 +122,7 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
     // Call fund method
     await appClient
       .fund(
-        { fund_pay: donateTxn },
+        { fundPay: donateTxn },
         {
           sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
           assets: [submission.formData.nftID],
@@ -167,7 +167,7 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
           </button>
         )}
         <p> Minimum Donation: {submission.formData.minDonate} ALGO</p>
-        <progress className="progress progress-success w-56" value={progressPercentage} max="100"></progress>
+        {/* <progress className="progress progress-success w-56" value={progressPercentage} max="100"></progress> */}
         <div className="card-actions join justify-end">
           <input
             className="input input-bordered join-item"

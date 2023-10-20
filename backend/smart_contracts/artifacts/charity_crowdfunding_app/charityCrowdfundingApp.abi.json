@@ -1,0 +1,142 @@
+{
+  "name": "charityCrowdfundingApp",
+  "desc": "",
+  "methods": [
+    {
+      "name": "authorizeCreator",
+      "args": [],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
+      "name": "optInAsset",
+      "args": [
+        {
+          "name": "assetId",
+          "type": "asset",
+          "desc": ""
+        }
+      ],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
+      "name": "createApplication",
+      "args": [],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
+      "name": "bootstrap",
+      "args": [
+        {
+          "name": "title",
+          "type": "string",
+          "desc": ""
+        },
+        {
+          "name": "detail",
+          "type": "string",
+          "desc": ""
+        },
+        {
+          "name": "goal",
+          "type": "uint64",
+          "desc": ""
+        },
+        {
+          "name": "minDonation",
+          "type": "uint64",
+          "desc": ""
+        },
+        {
+          "name": "mbrPay",
+          "type": "pay",
+          "desc": ""
+        },
+        {
+          "name": "assetName",
+          "type": "string",
+          "desc": ""
+        },
+        {
+          "name": "unitName",
+          "type": "string",
+          "desc": ""
+        },
+        {
+          "name": "nftAmount",
+          "type": "uint64",
+          "desc": ""
+        },
+        {
+          "name": "assetUrl",
+          "type": "string",
+          "desc": ""
+        }
+      ],
+      "desc": "",
+      "returns": {
+        "type": "uint64",
+        "desc": ""
+      }
+    },
+    {
+      "name": "fund",
+      "args": [
+        {
+          "name": "fundPay",
+          "type": "pay",
+          "desc": ""
+        }
+      ],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
+      "name": "claimFund",
+      "args": [],
+      "desc": "",
+      "returns": {
+        "type": "uint64",
+        "desc": ""
+      }
+    },
+    {
+      "name": "deleteDonatorInfo",
+      "args": [
+        {
+          "name": "donator",
+          "type": "account",
+          "desc": ""
+        }
+      ],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
+      "name": "deleteApplication",
+      "args": [],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    }
+  ]
+}

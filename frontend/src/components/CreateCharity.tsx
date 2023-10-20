@@ -6,7 +6,7 @@ import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useEffect, useRef, useState } from 'react'
 import { Web3Storage } from 'web3.storage'
-import { CharityCrowdfundingAppClient } from '../contracts/charity_crowdfunding_app'
+import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
 import { FormData } from '../interfaces/formData'
 import { getAlgodConfigFromViteEnvironment, getIndexerConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
 
@@ -154,12 +154,12 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
           title: formData.title,
           detail: formData.detail,
           goal: Number(formData.goal) * 1e6,
-          min_donate: Number(formData.minDonate) * 1e6,
-          mbr_pay: { transaction: payMbrTxn, signer: signingAccount },
-          asset_name: formData.assetName,
-          unit_name: formData.assetUnitName,
-          nft_amount: Number(formData.nftAmount),
-          asset_url: `ipfs://${metadataRoot}/metadata.json#arc3`,
+          minDonation: Number(formData.minDonate) * 1e6,
+          mbrPay: { transaction: payMbrTxn, signer: signingAccount },
+          assetName: formData.assetName,
+          unitName: formData.assetUnitName,
+          nftAmount: Number(formData.nftAmount),
+          assetUrl: `ipfs://${metadataRoot}/metadata.json#arc3`,
         },
         { sendParams: { fee: algokit.transactionFees(2) } },
       )
