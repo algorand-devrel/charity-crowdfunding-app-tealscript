@@ -14,7 +14,7 @@
       "envFile": "${workspaceFolder}/.env.localnet"
     },
     {
-      "name": "Deploy Built Beaker application",
+      "name": "Deploy Built TEALScript application",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",

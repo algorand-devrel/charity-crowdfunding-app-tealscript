@@ -1,6 +1,6 @@
 # charity-crowdfunding-tealscript
 
-This starter full stack project has been generated using AlgoKit. See below for default getting started instructions.
+This is a fullstack charity crowdfunding application built with AlgoKit, the fullstack template, and TEALScript for the smart contract. See below for getting started instructions.
 
 ## Setup
 
@@ -20,20 +20,36 @@ This starter full stack project has been generated using AlgoKit. See below for 
 
 # Demo
 
-Make sure you are in workspace mode for vscode. You can do this by going to the `charity-crowdfunding-algokit.code-workspace` file and clicking on the `workspace` button on the bottom right of the screen. This will open up the workspace in vscode.
+Make sure you are in workspace mode for vscode. You can do this by going to the `charity-crowdfunding-tealscript.code-workspace` file and clicking on the `workspace` button on the bottom right of the screen. This will open up the workspace in vscode.
+
+Before you continue make sure you have Docker Desktop running in the background. We use Docker to launch a local Algorand blockchain on your computer.
 
 ## Backend
+Make sure you are in the `Backend` folder in your terminal.
 
 The `deploy-config.ts` file in `backend/smart_contracts/charity_crowdfunding` folder contains a test script that goes through the entire lifecycle of a charity crowdfunding app. You can run this script by running the following command in the terminal:
 
 ```
-cd backend
-hit F5
+cd smart_contracts/charity_crowdfunding
+npx tealscript contract.algo.ts ../artifacts/charity_crowdfunding_app
+algokit generate client ../artifacts/charity_crowdfunding_app -o ../artifacts/charity_crowdfunding_app/client.ts -l typescript 
 ```
 
-## Frontend
+Then go to "RUN AND DEBUG" in VSCode and Run `Deploy Built TEALScript application`
 
-TODO
+
+## Frontend
+Make sure you are in the `frontend` folder in your terminal.
+
+To launch a local server to play around with the frontend:
+
+```
+npm run build
+npm run preview
+```
+
+Running these two commands will launch a local server with the frontend running on it. 
+
 
 ### Subsequently
 

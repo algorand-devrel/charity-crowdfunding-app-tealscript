@@ -320,7 +320,7 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
           onClick={handleSubmit}
           disabled={loading}
         >
-          {loading ? <span className="loading loading-spinner" /> : <p className="text-white">'Create Fundraiser'</p>}
+          {loading ? <span className="loading loading-spinner" /> : <p className="text-white">Create Fundraiser</p>}
         </button>
       </div>
     </div>

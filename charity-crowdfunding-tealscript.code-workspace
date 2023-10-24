@@ -58,7 +58,7 @@
         "name": "Run Frontend (+ LocalNet and Smart Contract)",
         "configurations": [
           {
-            "name": "Deploy Built Beaker application",
+            "name": "Deploy Built TEALScript application",
             "folder": "backend"
           },
           { "name": "Run dApp", "folder": "frontend" }
