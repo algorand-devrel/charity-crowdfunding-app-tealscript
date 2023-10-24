@@ -8,6 +8,7 @@ import { SnackbarProvider } from 'notistack'
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Navbar } from './components/Navbar'
+import { FormData } from './interfaces/formData'
 import { Create } from './pages/Create'
 import { Home } from './pages/Home'
 import { getAlgodConfigFromViteEnvironment } from './utils/network/getAlgoClientConfigs'
@@ -33,9 +34,9 @@ export default function App() {
     console.log('submissions: ', submissions)
   }, [submissions])
 
-  const handleFormSubmit = (formData: any) => {
+  const handleFormSubmit = (formData: FormData) => {
     console.log('formData in handleFormSubmit: ', formData)
-    const newSubmission = { formData }
+    const newSubmission = formData
     setSubmissions((prevSubmissions: any) => [...prevSubmissions, newSubmission])
   }
 

@@ -8,33 +8,7 @@ interface HomeComponentProps {
 }
 
 export function Home({ submissions }: HomeComponentProps) {
-  const [fundRaiserData, setFundRaiserData] = useState<any>([])
-
-  // useEffect(() => {
-  //   console.log('submissions in home: ', submissions)
-  //   const processedData = submissions.map((submission: FormData) => {
-  //     const fileReader = new FileReader()
-  //     if (submission.image) {
-  //       fileReader.onload = () => {
-  //         setImageUrl(reader.result as string);
-  //       };
-  //       reader.readAsDataURL(file);
-  //     fileReader.readAsDataURL(submission.image)
-  //     fileReader.onload = (e) => {
-  //       if (!e.target) return
-  //       const imageSrc = e.target.result
-  //       setFundRaiserData((prevData: any) => [...prevData, { ...submission, image: imageSrc }])
-  //     }
-  //     return fileReader
-  //   }
-
-  //     console.log('No image found in submission: ', submission)
-  //   return () => {
-  //     processedData.forEach((fileReader: FileReader) => {
-  //       fileReader.abort()
-  //     })
-  //   }
-  // }, [submissions])
+  const [fundRaiserData, setFundRaiserData] = useState<FormData[]>([])
 
   useEffect(() => {
     console.log('Received submissions in Home:', submissions)
@@ -69,7 +43,7 @@ export function Home({ submissions }: HomeComponentProps) {
         <div className="container mx-auto mt-10">
           <h2 className="text-3xl font-bold text-center">Browse nonprofit fundraisers</h2>
           <div className="grid grid-cols-3 gap-4 grid-auto-rows-auto mt-10">
-            {fundRaiserData.map((submission: object) => (
+            {fundRaiserData.map((submission: FormData) => (
               <FundraiseItem submission={submission} />
             ))}
           </div>

@@ -50,7 +50,7 @@ class charityCrowdfundingApp extends Contract {
     assetUrl: string,
   ): uint64 {
     this.authorizeCreator()
-    assert(mbrPay.amount > 100_000) // Asset Min Balance
+    assert(mbrPay.amount >= 100_000) // Asset Min Balance
     assert(mbrPay.receiver == this.app.address)
     assert(mbrPay.sender == this.app.creator)
 
@@ -157,6 +157,7 @@ class charityCrowdfundingApp extends Contract {
     })
   }
 
+  @allow.bareCall('DeleteApplication')
   deleteApplication(): void {
     this.authorizeCreator()
     assert(this.active.value == 0)

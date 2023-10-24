@@ -5,18 +5,17 @@ import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
 import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
-import { getAlgodConfigFromViteEnvironment, getIndexerConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
+import { FormData } from '../interfaces/formData'
+import { getAlgodConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
 
 interface FundraiseItemProps {
-  submission: any
+  submission: FormData
 }
 
 export function FundraiseItem({ submission }: FundraiseItemProps) {
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [donationAmount, setDonationAmount] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
-  // const [raisedAmount, setRaisedAmount] = useState<number>(0)
-  // const progressPercentage = (raisedAmount / submission.formData.goal) * 100
 
   const { enqueueSnackbar } = useSnackbar()
   const { signer, activeAddress } = useWallet()
@@ -27,42 +26,6 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
     port: algodConfig.port,
     token: algodConfig.token,
   })
-
-  const indexerConfig = getIndexerConfigFromViteEnvironment()
-  const indexer = algokit.getAlgoIndexerClient({
-    server: indexerConfig.server,
-    port: indexerConfig.port,
-    token: indexerConfig.token,
-  })
-
-  // const appID = submission.formData.appID
-  // const signingAccount = { signer, addr: activeAddress } as TransactionSignerAccount
-
-  // const appClient = new CharityCrowdfundingAppClient(
-  //   {
-  //     resolveBy: 'id',
-  //     id: appID,
-  //     sender: signingAccount,
-  //   },
-  //   algodClient,
-  // )
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       // Your async code here
-  //       const global_state = await appClient.getGlobalState()
-  //       console.log('global_state: ', global_state)
-  //       if (global_state['fund_raised']) {
-  //         setRaisedAmount(global_state['fund_raised'].asNumber())
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching data:', error)
-  //     }
-  //   }
-
-  // fetchData() // Call the async function immediately
-  // }, [loading])
 
   const toggleDescription = () => {
     setShowFullDescription(!showFullDescription)
@@ -76,14 +39,14 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
     // Process the donation here
     setLoading(true)
     const currentDonationAmount = donationAmount // Capture the current value
-    console.log(submission.formData)
+    console.log('Check what submission is', submission)
     console.log('Donation Amount: ', currentDonationAmount)
     if (!signer || !activeAddress) {
       enqueueSnackbar('Please connect wallet first', { variant: 'warning' })
       return
     }
 
-    const appID = submission.formData.appID
+    const appID = submission.appID
     const signingAccount = { signer, addr: activeAddress } as TransactionSignerAccount
 
     const appClient = new CharityCrowdfundingAppClient(
@@ -101,7 +64,7 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
       suggestedParams: sp,
       to: activeAddress,
       amount: 0,
-      assetIndex: submission.formData.nftID,
+      assetIndex: submission.nftID,
     })
 
     // Donator optin to reward NFT
@@ -125,7 +88,7 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
         { fundPay: donateTxn },
         {
           sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
-          assets: [submission.formData.nftID],
+          assets: [submission.nftID],
           boxes: [{ appId: appID, name: signingAccount }],
         },
       )
@@ -139,10 +102,10 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
   return (
     <div className="card w-96 bg-base-100 shadow-xl rounded-md mx-auto my-auto overflow-hidden h-full">
       <figure className="overflow-hidden h-40">
-        <img src={submission.formData.imageUrl} alt="Fundraiser" />
+        <img src={submission.imageUrl} alt="Fundraiser" />
       </figure>
       <div className="card-body p-4">
-        <h2 className="card-title">{submission.formData.title}</h2>
+        <h2 className="card-title">{submission.title}</h2>
         <p
           className={`mt-3 ${showFullDescription ? 'show-full' : 'show-truncated'}`}
           style={{
@@ -151,9 +114,9 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
             transition: 'max-height 0.5s ease',
           }}
         >
-          {submission.formData.detail}
+          {submission.detail}
         </p>
-        {submission.formData.detail.length > 100 && (
+        {submission.detail.length > 100 && (
           <button
             onClick={toggleDescription}
             className="show-more"
@@ -166,7 +129,7 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
             {showFullDescription ? 'Show less' : 'Show more'}
           </button>
         )}
-        <p> Minimum Donation: {submission.formData.minDonate} ALGO</p>
+        <p> Minimum Donation: {submission.minDonate} ALGO</p>
         {/* <progress className="progress progress-success w-56" value={progressPercentage} max="100"></progress> */}
         <div className="card-actions join justify-end">
           <input

@@ -1,9 +1,8 @@
 import { StartCreate } from '../components/CreateCharity'
-
-type Status = 'create' | 'created'
+import { FormData } from '../interfaces/formData'
 
 interface CreateComponentProps {
-  onFormSubmit: (formData: any) => void
+  onFormSubmit: (formData: FormData) => void
 }
 
 export function Create({ onFormSubmit }: CreateComponentProps) {

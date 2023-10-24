@@ -75,12 +75,12 @@ export async function deploy() {
       title: title,
       detail: detail,
       goal: goal.valueOf(),
-      min_donate: minDonate.valueOf(),
-      mbr_pay: { transaction: payAssetMbrTxn, signer: deployer },
-      asset_name: assetName,
-      unit_name: assetUnitName,
-      nft_amount: nftAmount,
-      asset_url: assetUrl,
+      minDonation: minDonate.valueOf(),
+      mbrPay: { transaction: payAssetMbrTxn, signer: deployer },
+      assetName: assetName,
+      unitName: assetUnitName,
+      nftAmount: nftAmount,
+      assetUrl: assetUrl,
     },
     { sendParams: { fee: algokit.transactionFees(2), suppressLog: true } },
   )
@@ -90,10 +90,8 @@ export async function deploy() {
   console.log('\tFundraiser Details after bootstrap')
   const global_state = await appClient.getGlobalState()
   console.log('\t Fundraise Title: ', global_state['title']?.asString())
-  const FundraiserDescription = await appClient.getDetails({})
-  console.log('\t Fundraise Description: ', FundraiserDescription.return?.toString())
   console.log('\t Fundraise Goal: ', global_state['goal']?.asNumber(), ' MicroAlgos')
-  console.log('\t Minimum Donation: ', global_state['min_donation']?.asNumber(), ' MicroAlgos')
+  console.log('\t Minimum Donation: ', global_state['minDonation']?.asNumber(), ' MicroAlgos')
 
   // Prepare account 2 and 3 app client
   const donator1 = await algokit.getAccount(
@@ -192,7 +190,7 @@ export async function deploy() {
 
   // Call fund method
   await appClient2.fund(
-    { fund_pay: donateTxn },
+    { fundPay: donateTxn },
     {
       sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
       assets: [rewardNftID],
@@ -215,7 +213,7 @@ export async function deploy() {
 
   // Call fund method
   await appClient3.fund(
-    { fund_pay: donateTxn2 },
+    { fundPay: donateTxn2 },
     {
       sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
       assets: [rewardNftID],
@@ -234,7 +232,7 @@ export async function deploy() {
   })
 
   await appClient3.fund(
-    { fund_pay: donateTxn3 },
+    { fundPay: donateTxn3 },
     {
       sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
       assets: [rewardNftID],

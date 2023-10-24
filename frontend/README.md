@@ -13,6 +13,7 @@ This starter React project has been generated using AlgoKit. See below for defau
    - Bootstrap your local environment; run `algokit bootstrap all` within this folder, which will run `npm install` to install NPM packages and dependencies for your frontend component/webapp.
    - Run `algokit localnet start` to start a local Algorand network in Docker. If you are using VS Code launch configurations provided by the template, this will be done automatically for you.
 3. Open the project and start debugging / developing via:
+
    - VS Code
      1. Open the repository root in VS Code
      2. Install recommended extensions
@@ -20,6 +21,8 @@ This starter React project has been generated using AlgoKit. See below for defau
    - Other
      1. Open the repository root in your text editor of choice
      2. In a terminal run `npm run dev`
+
+4. Create your own Web 3 Storage API Token to store NFT image on IPFS. And add the API Token to the .env file in line 69
 
 ### Subsequently
 

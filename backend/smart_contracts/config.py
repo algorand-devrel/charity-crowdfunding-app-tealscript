@@ -6,7 +6,7 @@ from algosdk.v2client.algod import AlgodClient
 from algosdk.v2client.indexer import IndexerClient
 from beaker import Application
 
-from smart_contracts.charity_crowdfunding.contract import app as charity_crowdfunding_app
+from smart_contracts.charity_crowdfunding.contract.algo.ts import app as charity_crowdfunding_app
 
 
 @dataclasses.dataclass

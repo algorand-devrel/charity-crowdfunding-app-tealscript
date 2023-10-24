@@ -10,10 +10,8 @@ import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingAp
 import { FormData } from '../interfaces/formData'
 import { getAlgodConfigFromViteEnvironment, getIndexerConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
 
-type Status = 'create' | 'created'
-
 interface StartCreateComponentProps {
-  onFormSubmit: (formData: any) => void
+  onFormSubmit: (formData: FormData) => void
 }
 
 export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
@@ -40,7 +38,6 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
   const isFirstRender = useRef(true)
   useEffect(() => {
     const W3S_TOKEN = import.meta.env.VITE_WEB3STORAGE_TOKEN
-    console.log('W3S Token', W3S_TOKEN)
     if (W3S_TOKEN === undefined) {
       enqueueSnackbar('Loading...', { variant: 'warning' })
       return
@@ -110,7 +107,7 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
       enqueueSnackbar('Please connect wallet first', { variant: 'warning' })
       return
     }
-
+    console.log('W3S Token in handleSubmit', w3s)
     console.log('formData in handleSubmit: ', formData)
 
     const signingAccount = { signer, addr: activeAddress } as TransactionSignerAccount
