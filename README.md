@@ -2,6 +2,24 @@
 
 This is a fullstack charity crowdfunding application built with AlgoKit, the fullstack template, and TEALScript for the smart contract. See below for getting started instructions.
 
+## Understanding the project structure
+This project has 2 folders: Backend and Frontend
+
+### Backend Folder
+Backend folder is where you write your smart contract, tests, and deploy your contract. `backend/smart_contracts/charity_crowdfunding/contract.algo.ts` is the charity crowdfunding smart contract written in TEALScript that has the following features
+- bootstrap: insert charity information and create reward NFT
+- fund: external method used by donators to donate to the charity
+- claimfund: method used by the creator to claim collected funds
+- deleteDonatorInfo: delete boxes containing donator info
+
+### Frontend Folder
+Frontend holds a full React frotend for the chairty application. Currently you can:
+- Create a charity
+- fund the charity and receive a reward NFT
+
+TODO
+- create an admin page to claim collected funds
+
 ## Setup
 
 ### Initial setup
