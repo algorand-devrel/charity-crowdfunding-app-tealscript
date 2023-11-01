@@ -1,7 +1,5 @@
 import { Contract } from '@algorandfoundation/tealscript'
 
-const BOXMBR = 2500 + (32 + 64) * 400
-
 class charityCrowdfundingApp extends Contract {
   goal = GlobalStateKey<uint64>()
   detail = GlobalStateKey<string>() // Max 128 Bytes
@@ -11,7 +9,7 @@ class charityCrowdfundingApp extends Contract {
   minDonation = GlobalStateKey<uint64>()
   active = GlobalStateKey<uint64>()
   rewardNftId = GlobalStateKey<Asset>()
-  donatorInfo = BoxMap<Address, uint64>()
+  donatorInfo = LocalStateKey<uint64>()
 
   authorizeCreator(): void {
     assert(this.app.creator == this.txn.sender)
@@ -50,7 +48,7 @@ class charityCrowdfundingApp extends Contract {
     assetUrl: string,
   ): uint64 {
     this.authorizeCreator()
-    assert(mbrPay.amount >= 100_000) // Asset Min Balance
+    assert(mbrPay.amount >= globals.minBalance) // Asset Min Balance
     assert(mbrPay.receiver == this.app.address)
     assert(mbrPay.sender == this.app.creator)
 
@@ -58,6 +56,7 @@ class charityCrowdfundingApp extends Contract {
     this.detail.value = detail
     this.goal.value = goal
     this.minDonation.value = minDonation
+    this.fundRaised.value = 0
     this.active.value = 1
 
     let createdNft = sendAssetCreation({
@@ -70,7 +69,12 @@ class charityCrowdfundingApp extends Contract {
     })
 
     this.rewardNftId.value = createdNft
-    return btoi(itob(createdNft))
+    return btoi(itob(createdNft)) // Update when TEALScript supports Asset.value
+  }
+
+  @allow.bareCall('OptIn')
+  optInToApplication(): void {
+    this.donatorInfo(this.txn.sender).value = 0
   }
 
   /*
@@ -88,29 +92,27 @@ class charityCrowdfundingApp extends Contract {
   fund(fundPay: PayTxn): void {
     const fundAmount = fundPay.amount
     let totalFund = this.fundRaised.value
-    let newDonationAmount = 0
 
-    assert(fundAmount > BOXMBR)
+    assert(this.txn.sender.isOptedInToApp(this.app))
     assert(this.active.value == 1)
     assert(fundPay.sender == this.txn.sender)
     assert(fundAmount >= this.minDonation.value)
     assert(fundPay.receiver == this.app.address)
 
-    if (this.donatorInfo(this.txn.sender).exists) {
-      newDonationAmount = this.donatorInfo(this.txn.sender).value + fundAmount
-      this.donatorInfo(this.txn.sender).value = newDonationAmount
-      totalFund = totalFund + fundAmount
-    } else {
-      this.donatorInfo(this.txn.sender).value = fundAmount
+    let newDonationAmount = this.donatorInfo(this.txn.sender).value + fundAmount
+    this.donatorInfo(this.txn.sender).value = newDonationAmount
+    this.donatorNum.value = this.donatorNum.value + 1
+    this.fundRaised.value = totalFund + fundAmount
 
+    const optedIn = this.txn.sender.assetBalance(this.rewardNftId.value)
+
+    if (optedIn == 0) {
       sendAssetTransfer({
         xferAsset: this.rewardNftId.value,
         assetAmount: 1,
         assetReceiver: this.txn.sender,
         fee: 0,
       })
-      this.donatorNum.value = this.donatorNum.value + 1
-      totalFund = totalFund + fundAmount - BOXMBR
     }
   }
 
@@ -134,27 +136,6 @@ class charityCrowdfundingApp extends Contract {
     this.active.value = 0
     this.fundRaised.value = 0
     return totalRaisedFunds
-  }
-
-  /*
-  Delete the donator info box. Only the creator can delete the donator info.
-
-  @param donator: the donator address of the box to be deleted
-  */
-
-  deleteDonatorInfo(donator: Account): void {
-    this.authorizeCreator()
-
-    assert(this.active.value == 0)
-    assert(this.donatorInfo(donator).exists)
-
-    this.donatorInfo(donator).delete()
-
-    sendPayment({
-      amount: BOXMBR,
-      receiver: donator,
-      fee: 0,
-    })
   }
 
   @allow.bareCall('DeleteApplication')

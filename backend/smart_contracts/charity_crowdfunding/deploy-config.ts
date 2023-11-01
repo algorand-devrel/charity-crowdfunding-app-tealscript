@@ -17,17 +17,6 @@ const assetUrl = 'https://www.compassion.com/'
 //Donation Amount (CHANGE TO YOUR OWN)
 const donationAmount = algokit.algos(20).valueOf()
 
-async function printBoxes(appClient: CharityCrowdfundingAppClient) {
-  const boxes = await appClient.appClient.getBoxNames()
-  console.log(`${boxes.length} boxes found`)
-  for (const boxName of boxes) {
-    const encodedName = algosdk.encodeAddress(boxName.nameRaw)
-    console.log('box Name:', encodedName)
-    const content = await appClient.appClient.getBoxValueFromABIType(boxName, new algosdk.ABIUintType(64))
-    console.log('Donation Amount: ', Number(content) / 1_000_000, 'ALGO')
-  }
-}
-
 export async function deploy() {
   console.log('=== Deploying CharityCrowdfunding ===')
 
@@ -163,7 +152,7 @@ export async function deploy() {
   */
 
   const sp3 = await algod.getTransactionParams().do()
-  const optinTxns: algosdk.Transaction[] = []
+  const optinToNftTxns: algosdk.Transaction[] = []
 
   for (const donator of [donator1, donator2]) {
     const optinTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
@@ -174,11 +163,17 @@ export async function deploy() {
       assetIndex: rewardNftID,
     })
 
-    optinTxns.push(optinTxn)
+    optinToNftTxns.push(optinTxn)
   }
 
+  appClient2.appClient.optIn()
+  appClient3.appClient.optIn()
+
   // Donator 1 optin to reward NFT
-  await algokit.sendTransaction({ transaction: optinTxns[0], from: donator1, sendParams: { suppressLog: true } }, algod)
+  await algokit.sendTransaction(
+    { transaction: optinToNftTxns[0], from: donator1, sendParams: { suppressLog: true } },
+    algod,
+  )
 
   // Donate 1 Algo
   const donateTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -198,10 +193,17 @@ export async function deploy() {
     },
   )
 
+  //get fundRaised global state
+  let globalState = await appClient.getGlobalState()
+  console.log('Fund Raised 1: ', globalState['fundRaised']?.asNumber(), ' MicroAlgos')
+
   // Do the same for donator2
 
   // Donator 2 optin to reward NFT
-  await algokit.sendTransaction({ transaction: optinTxns[1], from: donator2, sendParams: { suppressLog: true } }, algod)
+  await algokit.sendTransaction(
+    { transaction: optinToNftTxns[1], from: donator2, sendParams: { suppressLog: true } },
+    algod,
+  )
 
   // Donate
   const donateTxn2 = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -221,6 +223,10 @@ export async function deploy() {
     },
   )
 
+  //get fundRaised global state
+  globalState = await appClient.getGlobalState()
+  console.log('Fund Raised 2: ', globalState['fundRaised']?.asNumber(), ' MicroAlgos')
+
   // Donator2 donates again. This time, no Box MBR is drained from the donation amount and the reward NFT is not sent again
 
   // Donate
@@ -239,11 +245,11 @@ export async function deploy() {
       boxes: [{ appId: app.appId, name: donator2 }],
     },
   )
+  //get fundRaised global state
+  globalState = await appClient.getGlobalState()
+  console.log('Fund Raised 3: ', globalState['fundRaised']?.asNumber(), ' MicroAlgos')
 
   console.log('Donator 2, 3 funded the fundraiser')
-
-  // Check created Boxes
-  await printBoxes(appClient)
 
   const donator1AssetInfo = await algod.accountAssetInformation(donator1.addr, rewardNftID).do()
   console.log(
@@ -270,22 +276,6 @@ export async function deploy() {
   const resultMessage = appAcctInfo.amount === appAcctInfo['min-balance'] ? 'balance == min-bal' : 'balance != min-bal'
   console.log(resultMessage)
 
-  // Delete boxes
-  const boxes = await appClient.appClient.getBoxNames()
-  for (const boxName of boxes) {
-    const encodedName = algosdk.encodeAddress(boxName.nameRaw)
-    await appClient.deleteDonatorInfo(
-      { donator: encodedName },
-      {
-        sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
-        boxes: [{ appId: app.appId, name: boxName.nameRaw }],
-      },
-    )
-    console.log('Box with name ', encodedName, 'is Deleted')
-  }
-  const boxes2 = await appClient.appClient.getBoxNames()
-  console.log(boxes2.length, ' boxes found')
-
   // delete app
   const deployerOptinTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
     from: deployer.addr,
@@ -301,4 +291,19 @@ export async function deploy() {
     sendParams: { suppressLog: true },
   })
   console.log('App Deleted')
+
+  console.log(
+    'Donator 1 appInfo before clear state',
+    await algod.accountApplicationInformation(donator1.addr, Number(app.appId)).do(),
+  )
+  await appClient2.appClient.clearState()
+
+  try {
+    const appInfo = await algod.accountApplicationInformation(donator1.addr, Number(app.appId)).do()
+    console.log('Donator 1 appInfo after clear state', appInfo)
+  } catch (e: any) {
+    console.log('Donator 1 appInfo after clear state', e['response']['body']['message'])
+  }
+
+  await appClient3.appClient.clearState()
 }

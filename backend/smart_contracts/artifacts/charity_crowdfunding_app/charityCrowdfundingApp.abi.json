@@ -91,6 +91,15 @@
       }
     },
     {
+      "name": "optInToApplication",
+      "args": [],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
       "name": "fund",
       "args": [
         {
@@ -111,21 +120,6 @@
       "desc": "",
       "returns": {
         "type": "uint64",
-        "desc": ""
-      }
-    },
-    {
-      "name": "deleteDonatorInfo",
-      "args": [
-        {
-          "name": "donator",
-          "type": "account",
-          "desc": ""
-        }
-      ],
-      "desc": "",
-      "returns": {
-        "type": "void",
         "desc": ""
       }
     },

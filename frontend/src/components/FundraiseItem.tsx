@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
 import { FormData } from '../interfaces/formData'
 import { getAlgodConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
+// import DonationOptinPopup from './DonationOptinPopup'
 
 interface FundraiseItemProps {
   submission: FormData
@@ -16,6 +17,7 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
   const [showFullDescription, setShowFullDescription] = useState(false)
   const [donationAmount, setDonationAmount] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
+  const [showPopup, setShowPopup] = useState(false)
 
   const { enqueueSnackbar } = useSnackbar()
   const { signer, activeAddress } = useWallet()
@@ -26,6 +28,14 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
     port: algodConfig.port,
     token: algodConfig.token,
   })
+
+  const handleDonateClick = () => {
+    setShowPopup(true)
+  }
+
+  const closePopup = () => {
+    setShowPopup(false)
+  }
 
   const toggleDescription = () => {
     setShowFullDescription(!showFullDescription)
