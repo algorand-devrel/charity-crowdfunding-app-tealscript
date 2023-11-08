@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "@algorandfoundation/tealscript": "^0.59.0"
+    "@algorandfoundation/algokit-utils": "^4.1.0",
+    "@algorandfoundation/tealscript": "^0.59.0",
+    "algosdk": "^2.7.0"
   }
 }

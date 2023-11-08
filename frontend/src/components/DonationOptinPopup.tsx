@@ -1,17 +1,32 @@
-export function DonationPopup({ show, onClose }) {
+interface DonationPopupProps {
+  openModal: boolean
+  closeModal: () => void
+}
+
+export function DonationOptinPopup({ openModal, closeModal }: DonationPopupProps) {
+  const handleYesClick = () => {
+    console.log('Yes Clicked')
+    closeModal()
+  }
+
   return (
-    <div className={`popup ${show ? 'active' : ''}`}>
-      <div className="popup-content">
+    <dialog className={`modal ${openModal ? 'modal-open' : ''}`}>
+      <form method="dialog" className="modal-box">
         <p>Do you want to opt in to the reward NFT to receive the NFT for donating to this charity?</p>
         <div className="button-container">
-          <button className="green-button" onClick={() => console.log('Yes clicked')}>
+          <button className="btn bg-green-600 border-1  m-2" onClick={handleYesClick}>
             Yes
           </button>
-          <button className="red-button" onClick={() => onClose()}>
+          <button
+            className="btn bg-red-500 border-1  m-2"
+            onClick={() => {
+              closeModal()
+            }}
+          >
             No
           </button>
         </div>
-      </div>
-    </div>
+      </form>
+    </dialog>
   )
 }
