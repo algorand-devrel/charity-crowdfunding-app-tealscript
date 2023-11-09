@@ -6,8 +6,10 @@ export interface FormData {
   assetName: string
   assetUnitName: string
   nftAmount: number
-  image: File | null // Specify the Blob type here
-  imageUrl: string
+  nftImage: File | null // Specify the Blob type here
+  charityImage: File | null // Specify the Blob type here
+  nftImageUrl: string
+  charityImageUrl: string
   appID: number
   nftID: number
   organizer_address: string

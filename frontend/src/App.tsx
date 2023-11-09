@@ -5,7 +5,7 @@ import { PeraWalletConnect } from '@perawallet/connect'
 import { PROVIDER_ID, ProvidersArray, WalletProvider, useInitializeProviders } from '@txnlab/use-wallet'
 import algosdk from 'algosdk'
 import { SnackbarProvider } from 'notistack'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Navbar } from './components/Navbar'
 import { FormData } from './interfaces/formData'
@@ -30,12 +30,7 @@ if (import.meta.env.VITE_ALGOD_NETWORK === '') {
 export default function App() {
   const [submissions, setSubmissions] = useState<any>([])
 
-  useEffect(() => {
-    console.log('submissions: ', submissions)
-  }, [submissions])
-
   const handleFormSubmit = (formData: FormData) => {
-    console.log('formData in handleFormSubmit: ', formData)
     const newSubmission = formData
     setSubmissions((prevSubmissions: any) => [...prevSubmissions, newSubmission])
   }

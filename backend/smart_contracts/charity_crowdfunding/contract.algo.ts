@@ -104,15 +104,18 @@ class charityCrowdfundingApp extends Contract {
     this.donatorNum.value = this.donatorNum.value + 1
     this.fundRaised.value = totalFund + fundAmount
 
-    const optedIn = this.txn.sender.assetBalance(this.rewardNftId.value)
+    const optedIn = this.txn.sender.hasAsset(this.rewardNftId.value)
 
-    if (optedIn == 0) {
-      sendAssetTransfer({
-        xferAsset: this.rewardNftId.value,
-        assetAmount: 1,
-        assetReceiver: this.txn.sender,
-        fee: 0,
-      })
+    if (optedIn == 1) {
+      const asaBalance = this.txn.sender.assetBalance(this.rewardNftId.value)
+      if (asaBalance == 0) {
+        sendAssetTransfer({
+          xferAsset: this.rewardNftId.value,
+          assetAmount: 1,
+          assetReceiver: this.txn.sender,
+          fee: 0,
+        })
+      }
     }
   }
 

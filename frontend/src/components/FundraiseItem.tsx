@@ -3,7 +3,7 @@ import { TransactionSignerAccount } from '@algorandfoundation/algokit-utils/type
 import { useWallet } from '@txnlab/use-wallet'
 import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
 import { FormData } from '../interfaces/formData'
 import { getAlgodConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
@@ -19,6 +19,8 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
   const [loading, setLoading] = useState<boolean>(false)
   const [openOptinModal, setOptinModal] = useState<boolean>(false)
 
+  const prevOpenOptinModal = useRef(openOptinModal)
+
   const { enqueueSnackbar } = useSnackbar()
   const { signer, activeAddress } = useWallet()
 
@@ -29,14 +31,30 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
     token: algodConfig.token,
   })
 
-  const donateToCharity = async () => {
-    // Process the donation here
+  const handleDonateClick = async () => {
     setLoading(true)
-    const currentDonationAmount = donationAmount // Capture the current value
-    console.log('Check what submission is', submission)
-    console.log('Donation Amount: ', currentDonationAmount)
     if (!signer || !activeAddress) {
       enqueueSnackbar('Please connect wallet first', { variant: 'warning' })
+      setDonationAmount(0)
+      setLoading(false)
+      return
+    }
+    try {
+      await algodClient.accountAssetInformation(activeAddress, submission.nftID).do()
+      donateToCharity()
+    } catch (e) {
+      toggleOptinModal()
+    }
+    setLoading(false)
+  }
+
+  const donateToCharity = async () => {
+    // Process the donation here
+    const currentDonationAmount = donationAmount // Capture the current value
+    if (!signer || !activeAddress) {
+      enqueueSnackbar('Please connect wallet first', { variant: 'warning' })
+      setDonationAmount(0)
+      setLoading(false)
       return
     }
 
@@ -51,32 +69,21 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
       },
       algodClient,
     )
-    //TODO: check if user has already opted in to reward NFT. If yes, skip this step.
-
-    // // Ask if user wants to optin to reward NFT
-    // setOptinModal(true, () => {
-    //   // After the state has been updated, continue with your code
-    //   waitForPopupToClose().then(() => {
-    //     // Continue with your code after the popup is closed
-    //   });
-    // });
 
     const sp = await algodClient.getTransactionParams().do()
 
-    const optinTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-      from: activeAddress,
-      suggestedParams: sp,
-      to: activeAddress,
-      amount: 0,
-      assetIndex: submission.nftID,
-    })
+    const accountInfo = await algodClient.accountInformation(activeAddress).do()
 
-    // Donator optin to reward NFT
-    await algokit
-      .sendTransaction({ transaction: optinTxn, from: signingAccount, sendParams: { suppressLog: true } }, algodClient)
-      .catch((e: Error) => {
+    const optedInToApp = accountInfo['apps-local-state'].filter((app: { id: number }) => app.id === appID)
+
+    // Optin to charity smart contract
+    if (optedInToApp.length === 0) {
+      await appClient.appClient.optIn().catch((e: Error) => {
         enqueueSnackbar(e.message, { variant: 'error' })
+        setDonationAmount(0)
+        setLoading(false)
       })
+    }
 
     // Donate Algo
     const donateTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -98,9 +105,11 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
       )
       .catch((e: Error) => {
         enqueueSnackbar(e.message, { variant: 'error' })
+        setDonationAmount(0)
+        setLoading(false)
       })
     setDonationAmount(0)
-    setLoading(false)
+    enqueueSnackbar(`You've successfully donated ${currentDonationAmount} ALGOs to this charity!`, { variant: 'success' })
   }
 
   const toggleDescription = () => {
@@ -115,26 +124,17 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
     setOptinModal(!openOptinModal)
   }
 
-  const handleDonationClick = async () => {
-    setOptinModal(true)
-
-    const waitForPopupToClose = () => {
-      if (openOptinModal === false) {
-        console.log('Popup closed')
-        donateToCharity()
-      } else {
-        console.log('Waiting for popup to close')
-        setTimeout(waitForPopupToClose, 100)
-      }
+  useEffect(() => {
+    if (prevOpenOptinModal.current === true && openOptinModal === false) {
+      donateToCharity()
     }
-
-    waitForPopupToClose()
-  }
+    prevOpenOptinModal.current = openOptinModal
+  }, [openOptinModal])
 
   return (
     <div className="card w-96 bg-base-100 shadow-xl rounded-md mx-auto my-auto overflow-hidden h-full">
       <figure className="overflow-hidden h-40">
-        <img src={submission.imageUrl} alt="Fundraiser" />
+        <img src={submission.charityImageUrl} alt="Fundraiser" />
       </figure>
       <div className="card-body p-4">
         <h2 className="card-title">{submission.title}</h2>
@@ -162,22 +162,22 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
           </button>
         )}
         <p> Minimum Donation: {submission.minDonate} ALGO</p>
-        {/* <progress className="progress progress-success w-56" value={progressPercentage} max="100"></progress> */}
         <div className="card-actions join justify-end">
           <input
             className="input input-bordered join-item"
             placeholder="Donation Amount in ALGOs"
             onChange={handleDonationChange}
+            value={donationAmount == 0 ? '' : donationAmount}
             type="number"
           />
           <button
             className="btn join-item rounded-r bg-green-500 border-none hover:bg-green-600 shadow-md transition-colors duration-300"
-            onClick={handleDonationClick}
+            onClick={handleDonateClick}
             disabled={loading}
           >
             {loading ? <span className="loading loading-spinner" /> : 'Donate'}
           </button>
-          <DonationOptinPopup openModal={openOptinModal} closeModal={toggleOptinModal} />
+          <DonationOptinPopup openModal={openOptinModal} closeModal={toggleOptinModal} submission={submission} />
         </div>
       </div>
     </div>

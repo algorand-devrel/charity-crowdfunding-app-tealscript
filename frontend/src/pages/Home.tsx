@@ -11,7 +11,6 @@ export function Home({ submissions }: HomeComponentProps) {
   const [fundRaiserData, setFundRaiserData] = useState<FormData[]>([])
 
   useEffect(() => {
-    console.log('Received submissions in Home:', submissions)
     if (submissions.length > 0) {
       setFundRaiserData(submissions)
     }
@@ -43,8 +42,8 @@ export function Home({ submissions }: HomeComponentProps) {
         <div className="container mx-auto mt-10">
           <h2 className="text-3xl font-bold text-center">Browse nonprofit fundraisers</h2>
           <div className="grid grid-cols-3 gap-4 grid-auto-rows-auto mt-10">
-            {fundRaiserData.map((submission: FormData) => (
-              <FundraiseItem submission={submission} />
+            {fundRaiserData.map((submission: FormData, index: number) => (
+              <FundraiseItem key={index} submission={submission} />
             ))}
           </div>
         </div>

@@ -32,7 +32,7 @@ abi_route_authorizeCreator:
 authorizeCreator:
 	proto 0 0
 
-	// ../../charity_crowdfunding/contract.algo.ts:15
+	// contract.algo.ts:15
 	// assert(this.app.creator == this.txn.sender)
 	txna Applications 0
 	app_params_get AppCreator
@@ -57,11 +57,11 @@ abi_route_optInAsset:
 optInAsset:
 	proto 1 0
 
-	// ../../charity_crowdfunding/contract.algo.ts:19
+	// contract.algo.ts:19
 	// this.authorizeCreator()
 	callsub authorizeCreator
 
-	// ../../charity_crowdfunding/contract.algo.ts:20
+	// contract.algo.ts:20
 	// sendAssetTransfer({
 	//       assetAmount: 0,
 	//       assetReceiver: this.app.address,
@@ -72,22 +72,22 @@ optInAsset:
 	int axfer
 	itxn_field TypeEnum
 
-	// ../../charity_crowdfunding/contract.algo.ts:21
+	// contract.algo.ts:21
 	// assetAmount: 0
 	int 0
 	itxn_field AssetAmount
 
-	// ../../charity_crowdfunding/contract.algo.ts:22
+	// contract.algo.ts:22
 	// assetReceiver: this.app.address
 	global CurrentApplicationAddress
 	itxn_field AssetReceiver
 
-	// ../../charity_crowdfunding/contract.algo.ts:23
+	// contract.algo.ts:23
 	// fee: 0
 	int 0
 	itxn_field Fee
 
-	// ../../charity_crowdfunding/contract.algo.ts:24
+	// contract.algo.ts:24
 	// xferAsset: assetId
 	frame_dig -1 // assetId: asset
 	itxn_field XferAsset
@@ -106,19 +106,19 @@ abi_route_createApplication:
 createApplication:
 	proto 0 0
 
-	// ../../charity_crowdfunding/contract.algo.ts:30
+	// contract.algo.ts:30
 	// this.fundRaised.value = 0
 	byte 0x66756e64526169736564 // "fundRaised"
 	int 0
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:31
+	// contract.algo.ts:31
 	// this.donatorNum.value = 0
 	byte 0x646f6e61746f724e756d // "donatorNum"
 	int 0
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:32
+	// contract.algo.ts:32
 	// this.active.value = 0
 	byte 0x616374697665 // "active"
 	int 0
@@ -182,11 +182,11 @@ abi_route_bootstrap:
 bootstrap:
 	proto 10 0
 
-	// ../../charity_crowdfunding/contract.algo.ts:50
+	// contract.algo.ts:50
 	// this.authorizeCreator()
 	callsub authorizeCreator
 
-	// ../../charity_crowdfunding/contract.algo.ts:51
+	// contract.algo.ts:51
 	// assert(mbrPay.amount >= globals.minBalance)
 	frame_dig -5 // mbrPay: pay
 	gtxns Amount
@@ -194,7 +194,7 @@ bootstrap:
 	>=
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:52
+	// contract.algo.ts:52
 	// assert(mbrPay.receiver == this.app.address)
 	frame_dig -5 // mbrPay: pay
 	gtxns Receiver
@@ -202,7 +202,7 @@ bootstrap:
 	==
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:53
+	// contract.algo.ts:53
 	// assert(mbrPay.sender == this.app.creator)
 	frame_dig -5 // mbrPay: pay
 	gtxns Sender
@@ -212,7 +212,7 @@ bootstrap:
 	==
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:55
+	// contract.algo.ts:55
 	// this.title.value = title
 	byte 0x7469746c65 // "title"
 	frame_dig -1 // title: bytes
@@ -224,7 +224,7 @@ bootstrap:
 	concat
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:56
+	// contract.algo.ts:56
 	// this.detail.value = detail
 	byte 0x64657461696c // "detail"
 	frame_dig -2 // detail: bytes
@@ -236,31 +236,31 @@ bootstrap:
 	concat
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:57
+	// contract.algo.ts:57
 	// this.goal.value = goal
 	byte 0x676f616c // "goal"
 	frame_dig -3 // goal: uint64
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:58
+	// contract.algo.ts:58
 	// this.minDonation.value = minDonation
 	byte 0x6d696e446f6e6174696f6e // "minDonation"
 	frame_dig -4 // minDonation: uint64
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:59
+	// contract.algo.ts:59
 	// this.fundRaised.value = 0
 	byte 0x66756e64526169736564 // "fundRaised"
 	int 0
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:60
+	// contract.algo.ts:60
 	// this.active.value = 1
 	byte 0x616374697665 // "active"
 	int 1
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:62
+	// contract.algo.ts:62
 	// createdNft = sendAssetCreation({
 	//       configAssetDecimals: 0,
 	//       configAssetName: assetName,
@@ -273,32 +273,32 @@ bootstrap:
 	int acfg
 	itxn_field TypeEnum
 
-	// ../../charity_crowdfunding/contract.algo.ts:63
+	// contract.algo.ts:63
 	// configAssetDecimals: 0
 	int 0
 	itxn_field ConfigAssetDecimals
 
-	// ../../charity_crowdfunding/contract.algo.ts:64
+	// contract.algo.ts:64
 	// configAssetName: assetName
 	frame_dig -6 // assetName: bytes
 	itxn_field ConfigAssetName
 
-	// ../../charity_crowdfunding/contract.algo.ts:65
+	// contract.algo.ts:65
 	// configAssetTotal: nftAmount
 	frame_dig -8 // nftAmount: uint64
 	itxn_field ConfigAssetTotal
 
-	// ../../charity_crowdfunding/contract.algo.ts:66
+	// contract.algo.ts:66
 	// configAssetURL: assetUrl
 	frame_dig -9 // assetUrl: bytes
 	itxn_field ConfigAssetURL
 
-	// ../../charity_crowdfunding/contract.algo.ts:67
+	// contract.algo.ts:67
 	// configAssetUnitName: unitName
 	frame_dig -7 // unitName: bytes
 	itxn_field ConfigAssetUnitName
 
-	// ../../charity_crowdfunding/contract.algo.ts:68
+	// contract.algo.ts:68
 	// fee: 0
 	int 0
 	itxn_field Fee
@@ -308,13 +308,13 @@ bootstrap:
 	itxn CreatedAssetID
 	frame_bury -10 // createdNft: asset
 
-	// ../../charity_crowdfunding/contract.algo.ts:71
+	// contract.algo.ts:71
 	// this.rewardNftId.value = createdNft
 	byte 0x7265776172644e66744964 // "rewardNftId"
 	frame_dig -10 // createdNft: asset
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:72
+	// contract.algo.ts:72
 	// return btoi(itob(createdNft))
 	frame_dig -10 // createdNft: asset
 	itob
@@ -336,7 +336,7 @@ abi_route_optInToApplication:
 optInToApplication:
 	proto 0 0
 
-	// ../../charity_crowdfunding/contract.algo.ts:77
+	// contract.algo.ts:77
 	// this.donatorInfo(this.txn.sender).value = 0
 	txn Sender
 	byte 0x646f6e61746f72496e666f // "donatorInfo"
@@ -357,7 +357,7 @@ optInToApplication:
 // @param mbr_pay: The payment transaction that covers the Box MBR
 // @param fund_pay: The payment transaction that covers the donation amount
 abi_route_fund:
-	byte 0x; dupn 3 // push empty bytes to fill the stack frame for this subroutine's local variables
+	byte 0x; dupn 4 // push empty bytes to fill the stack frame for this subroutine's local variables
 
 	// fundPay: pay
 	txn GroupIndex
@@ -375,28 +375,28 @@ abi_route_fund:
 	return
 
 fund:
-	proto 5 0
+	proto 6 0
 
-	// ../../charity_crowdfunding/contract.algo.ts:93
+	// contract.algo.ts:93
 	// fundAmount = fundPay.amount
 	frame_dig -1 // fundPay: pay
 	gtxns Amount
 	frame_bury -2 // fundAmount: uint64
 
-	// ../../charity_crowdfunding/contract.algo.ts:94
+	// contract.algo.ts:94
 	// totalFund = this.fundRaised.value
 	byte 0x66756e64526169736564 // "fundRaised"
 	app_global_get
 	frame_bury -3 // totalFund: uint64
 
-	// ../../charity_crowdfunding/contract.algo.ts:96
+	// contract.algo.ts:96
 	// assert(this.txn.sender.isOptedInToApp(this.app))
 	txn Sender
 	txna Applications 0
 	app_opted_in
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:97
+	// contract.algo.ts:97
 	// assert(this.active.value == 1)
 	byte 0x616374697665 // "active"
 	app_global_get
@@ -404,7 +404,7 @@ fund:
 	==
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:98
+	// contract.algo.ts:98
 	// assert(fundPay.sender == this.txn.sender)
 	frame_dig -1 // fundPay: pay
 	gtxns Sender
@@ -412,7 +412,7 @@ fund:
 	==
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:99
+	// contract.algo.ts:99
 	// assert(fundAmount >= this.minDonation.value)
 	frame_dig -2 // fundAmount: uint64
 	byte 0x6d696e446f6e6174696f6e // "minDonation"
@@ -420,7 +420,7 @@ fund:
 	>=
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:100
+	// contract.algo.ts:100
 	// assert(fundPay.receiver == this.app.address)
 	frame_dig -1 // fundPay: pay
 	gtxns Receiver
@@ -428,7 +428,7 @@ fund:
 	==
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:102
+	// contract.algo.ts:102
 	// newDonationAmount = this.donatorInfo(this.txn.sender).value + fundAmount
 	txn Sender
 	byte 0x646f6e61746f72496e666f // "donatorInfo"
@@ -437,14 +437,14 @@ fund:
 	+
 	frame_bury -4 // newDonationAmount: uint64
 
-	// ../../charity_crowdfunding/contract.algo.ts:103
+	// contract.algo.ts:103
 	// this.donatorInfo(this.txn.sender).value = newDonationAmount
 	txn Sender
 	byte 0x646f6e61746f72496e666f // "donatorInfo"
 	frame_dig -4 // newDonationAmount: uint64
 	app_local_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:104
+	// contract.algo.ts:104
 	// this.donatorNum.value = this.donatorNum.value + 1
 	byte 0x646f6e61746f724e756d // "donatorNum"
 	byte 0x646f6e61746f724e756d // "donatorNum"
@@ -453,7 +453,7 @@ fund:
 	+
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:105
+	// contract.algo.ts:105
 	// this.fundRaised.value = totalFund + fundAmount
 	byte 0x66756e64526169736564 // "fundRaised"
 	frame_dig -3 // totalFund: uint64
@@ -461,58 +461,79 @@ fund:
 	+
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:107
-	// optedIn = this.txn.sender.assetBalance(this.rewardNftId.value)
+	// contract.algo.ts:107
+	// optedIn = this.txn.sender.hasAsset(this.rewardNftId.value)
+	txn Sender
+	byte 0x7265776172644e66744964 // "rewardNftId"
+	app_global_get
+	asset_holding_get AssetBalance
+	swap
+	pop
+	frame_bury -5 // optedIn: uint64
+
+	// if0_condition
+	// contract.algo.ts:109
+	// optedIn == 1
+	frame_dig -5 // optedIn: uint64
+	int 1
+	==
+	bz if0_end
+
+	// if0_consequent
+	// contract.algo.ts:110
+	// asaBalance = this.txn.sender.assetBalance(this.rewardNftId.value)
 	txn Sender
 	byte 0x7265776172644e66744964 // "rewardNftId"
 	app_global_get
 	asset_holding_get AssetBalance
 	assert
-	frame_bury -5 // optedIn: uint64
+	frame_bury -6 // asaBalance: uint64
 
-	// if0_condition
-	// ../../charity_crowdfunding/contract.algo.ts:109
-	// optedIn == 0
-	frame_dig -5 // optedIn: uint64
+	// if1_condition
+	// contract.algo.ts:111
+	// asaBalance == 0
+	frame_dig -6 // asaBalance: uint64
 	int 0
 	==
-	bz if0_end
+	bz if1_end
 
-	// if0_consequent
-	// ../../charity_crowdfunding/contract.algo.ts:110
+	// if1_consequent
+	// contract.algo.ts:112
 	// sendAssetTransfer({
-	//         xferAsset: this.rewardNftId.value,
-	//         assetAmount: 1,
-	//         assetReceiver: this.txn.sender,
-	//         fee: 0,
-	//       })
+	//           xferAsset: this.rewardNftId.value,
+	//           assetAmount: 1,
+	//           assetReceiver: this.txn.sender,
+	//           fee: 0,
+	//         })
 	itxn_begin
 	int axfer
 	itxn_field TypeEnum
 
-	// ../../charity_crowdfunding/contract.algo.ts:111
+	// contract.algo.ts:113
 	// xferAsset: this.rewardNftId.value
 	byte 0x7265776172644e66744964 // "rewardNftId"
 	app_global_get
 	itxn_field XferAsset
 
-	// ../../charity_crowdfunding/contract.algo.ts:112
+	// contract.algo.ts:114
 	// assetAmount: 1
 	int 1
 	itxn_field AssetAmount
 
-	// ../../charity_crowdfunding/contract.algo.ts:113
+	// contract.algo.ts:115
 	// assetReceiver: this.txn.sender
 	txn Sender
 	itxn_field AssetReceiver
 
-	// ../../charity_crowdfunding/contract.algo.ts:114
+	// contract.algo.ts:116
 	// fee: 0
 	int 0
 	itxn_field Fee
 
 	// Submit inner transaction
 	itxn_submit
+
+if1_end:
 
 if0_end:
 	retsub
@@ -534,17 +555,17 @@ abi_route_claimFund:
 claimFund:
 	proto 1 0
 
-	// ../../charity_crowdfunding/contract.algo.ts:126
+	// contract.algo.ts:129
 	// this.authorizeCreator()
 	callsub authorizeCreator
 
-	// ../../charity_crowdfunding/contract.algo.ts:128
+	// contract.algo.ts:131
 	// totalRaisedFunds = this.fundRaised.value
 	byte 0x66756e64526169736564 // "fundRaised"
 	app_global_get
 	frame_bury -1 // totalRaisedFunds: uint64
 
-	// ../../charity_crowdfunding/contract.algo.ts:130
+	// contract.algo.ts:133
 	// sendPayment({
 	//       amount: totalRaisedFunds,
 	//       receiver: this.txn.sender,
@@ -554,17 +575,17 @@ claimFund:
 	int pay
 	itxn_field TypeEnum
 
-	// ../../charity_crowdfunding/contract.algo.ts:131
+	// contract.algo.ts:134
 	// amount: totalRaisedFunds
 	frame_dig -1 // totalRaisedFunds: uint64
 	itxn_field Amount
 
-	// ../../charity_crowdfunding/contract.algo.ts:132
+	// contract.algo.ts:135
 	// receiver: this.txn.sender
 	txn Sender
 	itxn_field Receiver
 
-	// ../../charity_crowdfunding/contract.algo.ts:133
+	// contract.algo.ts:136
 	// fee: 0
 	int 0
 	itxn_field Fee
@@ -572,19 +593,19 @@ claimFund:
 	// Submit inner transaction
 	itxn_submit
 
-	// ../../charity_crowdfunding/contract.algo.ts:136
+	// contract.algo.ts:139
 	// this.active.value = 0
 	byte 0x616374697665 // "active"
 	int 0
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:137
+	// contract.algo.ts:140
 	// this.fundRaised.value = 0
 	byte 0x66756e64526169736564 // "fundRaised"
 	int 0
 	app_global_put
 
-	// ../../charity_crowdfunding/contract.algo.ts:138
+	// contract.algo.ts:141
 	// return totalRaisedFunds
 	frame_dig -1 // totalRaisedFunds: uint64
 	itob
@@ -604,11 +625,11 @@ abi_route_deleteApplication:
 deleteApplication:
 	proto 0 0
 
-	// ../../charity_crowdfunding/contract.algo.ts:143
+	// contract.algo.ts:146
 	// this.authorizeCreator()
 	callsub authorizeCreator
 
-	// ../../charity_crowdfunding/contract.algo.ts:144
+	// contract.algo.ts:147
 	// assert(this.active.value == 0)
 	byte 0x616374697665 // "active"
 	app_global_get
@@ -616,7 +637,7 @@ deleteApplication:
 	==
 	assert
 
-	// ../../charity_crowdfunding/contract.algo.ts:145
+	// contract.algo.ts:148
 	// assert(this.fundRaised.value == 0)
 	byte 0x66756e64526169736564 // "fundRaised"
 	app_global_get

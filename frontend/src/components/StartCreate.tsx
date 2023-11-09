@@ -25,8 +25,10 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
     assetName: '',
     assetUnitName: '',
     nftAmount: 0,
-    image: null,
-    imageUrl: '',
+    nftImage: null,
+    charityImage: null,
+    nftImageUrl: '',
+    charityImageUrl: '',
     appID: 0,
     nftID: 0,
     organizer_address: '',
@@ -89,13 +91,25 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
     setFormData((prevFormData) => ({ ...prevFormData, [id]: value }))
   }
 
-  const handleFileChange = (e: { target: { files: FileList | null } }) => {
+  const handleCharityFileChange = (e: { target: { files: FileList | null } }) => {
     const file = e.target.files?.[0]
     if (file) {
-      setFormData((prevFormData) => ({ ...prevFormData, image: file }))
+      setFormData((prevFormData) => ({ ...prevFormData, charityImage: file }))
       const reader = new FileReader()
       reader.onload = () => {
-        setFormData((prevFormData) => ({ ...prevFormData, imageUrl: reader.result as string }))
+        setFormData((prevFormData) => ({ ...prevFormData, charityImageUrl: reader.result as string }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleNftFileChange = (e: { target: { files: FileList | null } }) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setFormData((prevFormData) => ({ ...prevFormData, nftImage: file }))
+      const reader = new FileReader()
+      reader.onload = () => {
+        setFormData((prevFormData) => ({ ...prevFormData, nftImageUrl: reader.result as string }))
       }
       reader.readAsDataURL(file)
     }
@@ -105,10 +119,10 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
     setLoading(true)
     if (!signer || !activeAddress) {
       enqueueSnackbar('Please connect wallet first', { variant: 'warning' })
+      setLoading(false)
       return
     }
     console.log('W3S Token in handleSubmit', w3s)
-    console.log('formData in handleSubmit: ', formData)
 
     const signingAccount = { signer, addr: activeAddress } as TransactionSignerAccount
 
@@ -127,8 +141,6 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
       return
     })
 
-    console.log('App created: ', app)
-
     if (!app) {
       enqueueSnackbar('App is Not Created!', { variant: 'warning' })
       return
@@ -143,7 +155,17 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
       suggestedParams: sp,
     })
 
-    const metadataRoot = await imageToArc3(formData.image)
+    const metadataRoot = await imageToArc3(formData.nftImage).catch((e: Error) => {
+      enqueueSnackbar(`Error Bootstraping the contract: ${e.message}`, { variant: 'error' })
+      setLoading(false)
+      return
+    })
+
+    await imageToArc3(formData.charityImage).catch((e: Error) => {
+      enqueueSnackbar(`Error Bootstraping the contract: ${e.message}`, { variant: 'error' })
+      setLoading(false)
+      return
+    })
 
     const bootstrapOutput = await appClient
       .bootstrap(
@@ -166,8 +188,6 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
         return
       })
 
-    console.log('Bootstrap Output: ', bootstrapOutput)
-
     const rewardNftID = Number(bootstrapOutput?.return?.valueOf())
     console.log('The created Reward NFT ID is: ', rewardNftID)
     if (!app || !rewardNftID) {
@@ -177,14 +197,16 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
 
     setFormData((prevFormData) => ({ ...prevFormData, appID: Number(app.appId), nftID: rewardNftID, organizer_address: activeAddress }))
   }
+
   useEffect(() => {
     if (isFirstRender.current || formData.appID === 0 || formData.nftID === 0) {
       isFirstRender.current = false
       return
     }
 
-    console.log('formData in useEffect: ', formData)
+    console.log('formData after App Creation: ', formData)
     onFormSubmit(formData)
+    enqueueSnackbar(`Charity Successfully Created!`, { variant: 'success' })
 
     setFormData({
       title: '',
@@ -194,8 +216,10 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
       assetName: '',
       assetUnitName: '',
       nftAmount: 0,
-      image: null,
-      imageUrl: '',
+      nftImage: null,
+      charityImage: null,
+      nftImageUrl: '',
+      charityImageUrl: '',
       appID: 0,
       nftID: 0,
       organizer_address: '',
@@ -269,6 +293,9 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
               onChange={handleInputChange}
             ></textarea>
           </div>
+          <div className="form-control w-full md:w-1/2 px-2 mb-4">
+            <input type="file" className="file-input rounded" id="image" onChange={handleCharityFileChange} />
+          </div>
         </div>
         <h1 className="text-2xl font-bold mb-4">Proof of Donation NFT Details</h1>
         <div className="flex flex-wrap -mx-2 mb-4">
@@ -312,7 +339,7 @@ export function StartCreate({ onFormSubmit }: StartCreateComponentProps) {
             />
           </div>
           <div className="form-control w-full md:w-1/2 px-2 mb-4">
-            <input type="file" className="file-input rounded" id="image" onChange={handleFileChange} />
+            <input type="file" className="file-input rounded" id="image" onChange={handleNftFileChange} />
           </div>
         </div>
         <button

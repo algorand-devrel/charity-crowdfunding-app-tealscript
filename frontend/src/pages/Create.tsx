@@ -1,4 +1,4 @@
-import { StartCreate } from '../components/CreateCharity'
+import { StartCreate } from '../components/StartCreate'
 import { FormData } from '../interfaces/formData'
 
 interface CreateComponentProps {
