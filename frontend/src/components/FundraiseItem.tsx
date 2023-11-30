@@ -6,7 +6,8 @@ import { useSnackbar } from 'notistack'
 import { useEffect, useRef, useState } from 'react'
 import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
 import { FormData } from '../interfaces/formData'
-import { getAlgodConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
+import { getAlgodClient } from '../utils/setupClients'
+
 import { DonationOptinPopup } from './DonationOptinPopup'
 
 interface FundraiseItemProps {
@@ -24,12 +25,7 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
   const { enqueueSnackbar } = useSnackbar()
   const { signer, activeAddress } = useWallet()
 
-  const algodConfig = getAlgodConfigFromViteEnvironment()
-  const algodClient = algokit.getAlgoClient({
-    server: algodConfig.server,
-    port: algodConfig.port,
-    token: algodConfig.token,
-  })
+  const algodClient = getAlgodClient()
 
   const handleDonateClick = async () => {
     setLoading(true)
@@ -100,7 +96,6 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
         {
           sendParams: { fee: algokit.transactionFees(2), suppressLog: true },
           assets: [submission.nftID],
-          boxes: [{ appId: appID, name: signingAccount }],
         },
       )
       .catch((e: Error) => {

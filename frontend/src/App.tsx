@@ -35,6 +35,11 @@ export default function App() {
     setSubmissions((prevSubmissions: any) => [...prevSubmissions, newSubmission])
   }
 
+  const handleRemoveFundraiser = (submission: FormData) => {
+    const newSubmissions = submissions.filter((s: FormData) => s !== submission)
+    setSubmissions(newSubmissions)
+  }
+
   const algodConfig = getAlgodConfigFromViteEnvironment()
 
   const walletProviders = useInitializeProviders({
@@ -55,7 +60,10 @@ export default function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<Home submissions={submissions} />} />
-            <Route path="/create" element={<Create onFormSubmit={handleFormSubmit} />} />
+            <Route
+              path="/create"
+              element={<Create onFormSubmit={handleFormSubmit} handleRemoveFundraiser={handleRemoveFundraiser} submissions={submissions} />}
+            />
           </Routes>
         </BrowserRouter>
       </WalletProvider>

@@ -5,7 +5,7 @@ import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
 import { FormData } from '../interfaces/formData'
-import { getAlgodConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
+import { getAlgodClient } from '../utils/setupClients'
 
 interface DonationPopupProps {
   openModal: boolean
@@ -19,12 +19,7 @@ export function DonationOptinPopup({ openModal, closeModal, submission }: Donati
   const { enqueueSnackbar } = useSnackbar()
   const { signer, activeAddress } = useWallet()
 
-  const algodConfig = getAlgodConfigFromViteEnvironment()
-  const algodClient = algokit.getAlgoClient({
-    server: algodConfig.server,
-    port: algodConfig.port,
-    token: algodConfig.token,
-  })
+  const algodClient = getAlgodClient()
 
   const handleYesClick = async () => {
     setLoading(true)
