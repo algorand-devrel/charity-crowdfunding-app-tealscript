@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FundraiseItem } from '../components/FundraiseItem'
-import { FormData } from '../interfaces/formData'
+import { CharityFormData } from '../interfaces/CharityFormData'
 
 interface HomeComponentProps {
-  submissions: FormData[]
+  submissions: CharityFormData[]
 }
 
 export function Home({ submissions }: HomeComponentProps) {
-  const [fundRaiserData, setFundRaiserData] = useState<FormData[]>([])
+  const [fundRaiserData, setFundRaiserData] = useState<CharityFormData[]>([])
 
   useEffect(() => {
     if (submissions.length > 0) {
@@ -42,7 +42,7 @@ export function Home({ submissions }: HomeComponentProps) {
         <div className="container mx-auto mt-10">
           <h2 className="text-3xl font-bold text-center">Browse nonprofit fundraisers</h2>
           <div className="grid grid-cols-3 gap-4 grid-auto-rows-auto mt-10">
-            {fundRaiserData.map((submission: FormData, index: number) => (
+            {fundRaiserData.map((submission: CharityFormData, index: number) => (
               <FundraiseItem key={index} submission={submission} />
             ))}
           </div>

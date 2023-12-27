@@ -4,13 +4,13 @@ import { useWallet } from '@txnlab/use-wallet'
 import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
-import { FormData } from '../interfaces/formData'
+import { CharityFormData } from '../interfaces/CharityFormData'
 import { getAlgodClient } from '../utils/setupClients'
 
 interface DonationPopupProps {
   openModal: boolean
   closeModal: () => void
-  submission: FormData
+  submission: CharityFormData
 }
 
 export function DonationOptinPopup({ openModal, closeModal, submission }: DonationPopupProps) {

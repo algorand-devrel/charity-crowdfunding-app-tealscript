@@ -5,11 +5,11 @@ import { useWallet } from '@txnlab/use-wallet'
 import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useEffect, useRef, useState } from 'react'
-import { Web3Storage } from 'web3.storage'
+// import { Web3Storage } from 'web3.storage'
+import { default as PinataClient, default as pinataSDK } from '@pinata/sdk'
 import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
-import { FormData } from '../interfaces/formData'
+import { CharityFormData } from '../interfaces/charityFormData'
 import { getAlgodClient, getIndexerClient } from '../utils/setupClients'
-
 /**
  * Interface
  *
@@ -19,9 +19,9 @@ import { getAlgodClient, getIndexerClient } from '../utils/setupClients'
  */
 
 interface StartCreateComponentProps {
-  onFormSubmit: (formData: FormData) => void
-  handleRemoveFundraiser: (submission: FormData) => void
-  submissions: FormData[]
+  onFormSubmit: (CharityFormData: CharityFormData) => void
+  handleRemoveFundraiser: (submission: CharityFormData) => void
+  submissions: CharityFormData[]
 }
 
 /**
@@ -34,8 +34,8 @@ interface StartCreateComponentProps {
 export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions }: StartCreateComponentProps) {
   const [loading, setLoading] = useState<boolean>(false)
   const [currentFundraiserBalance, setCurrentFundraiserBalance] = useState<number>(0)
-  const [w3s, setW3s] = useState<Web3Storage>()
-  const [formData, setFormData] = useState<FormData>({
+  const [pinata, setPinata] = useState<PinataClient>()
+  const [CharityFormData, setCharityFormData] = useState<CharityFormData>({
     title: '',
     detail: '',
     goal: 0,
@@ -57,15 +57,71 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
 
   const isFirstRender = useRef(true)
 
-  // Initialize Web3 Storage. Used to store the NFT image and metadata on IPFS
-  useEffect(() => {
-    const W3S_TOKEN = import.meta.env.VITE_WEB3STORAGE_TOKEN
-    if (W3S_TOKEN === undefined) {
-      enqueueSnackbar('Loading...', { variant: 'warning' })
+  // PINATA STUFF
+
+  const imageToArc3 = async (file: File) => {
+    if (!pinata) {
+      enqueueSnackbar('Pinata not initialized', { variant: 'warning' })
       return
     }
-    const w3s = new Web3Storage({ token: W3S_TOKEN })
-    setW3s(w3s)
+    try {
+      // setUploading(true)
+      // const readableStreamForFile = fs.createReadStream(file)
+      const options = {
+        // pinataMetadata: {
+        //   name: "MyCustomName",
+        //   keyvalues: {
+        //     customKey: 'customValue',
+        //     customKey2: 'customValue2',
+        //   },
+        // },
+        pinataOptions: {
+          cidVersion: 0,
+        },
+      }
+      const res = await pinata.pinFileToIPFS(file, options)
+      console.log(res)
+
+      const metadata = JSON.stringify({
+        decimals: 0,
+        name: CharityFormData.assetName,
+        unitName: CharityFormData.assetUnitName,
+        image: `ipfs://${ipfsHash}/${file.name}`,
+        image_mimetype: file.type,
+        properties: {},
+      })
+
+      const metadataFile = new File([metadata], 'metadata.json', { type: 'text/plain' })
+
+      pinataCharityFormData.append('arc3file', metadataFile, metadataFile.name)
+      res = await fetch('/api/files', {
+        method: 'POST',
+        body: pinataCharityFormData,
+      })
+      console.log('arc3 res: ', res)
+      ipfsHash = await res.text()
+      console.log('ipfsHash: ', ipfsHash)
+      setUploading(false)
+      return ipfsHash
+    } catch (e) {
+      console.log(e)
+      setUploading(false)
+      alert('Trouble uploading file')
+    }
+  }
+
+  // Initialize Web3 Storage. Used to store the NFT image and metadata on IPFS
+  useEffect(() => {
+    const pinataJWT = import.meta.env.VITE_PINATA_JWT
+    const pinata = new pinataSDK({ pinataJWTKey: pinataJWT })
+    console.log('PINATA_KEY: ', PINATA_KEY)
+    // const W3S_TOKEN = import.meta.env.VITE_WEB3STORAGE_TOKEN
+    // if (W3S_TOKEN === undefined) {
+    //   enqueueSnackbar('Loading...', { variant: 'warning' })
+    //   return
+    // }
+    // const w3s = new Web3Storage({ token: W3S_TOKEN })
+    setPinata(pinata)
   }, [])
 
   // Set up algod, Indexer
@@ -73,57 +129,57 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
   const indexer = getIndexerClient()
 
   // Function to convert the NFT image to Arc3 format (https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0003.md)
-  async function imageToArc3(file: any) {
-    if (!w3s) {
-      enqueueSnackbar('Web3 Storage not initialized', { variant: 'warning' })
-      return
-    }
+  // async function imageToArc3(file: any) {
+  //   if (!w3s) {
+  //     enqueueSnackbar('Web3 Storage not initialized', { variant: 'warning' })
+  //     return
+  //   }
 
-    const imageFile = new File([await file.arrayBuffer()], file.name, { type: file.type })
-    const imageRoot = await w3s.put([imageFile], { name: file.name })
+  //   const imageFile = new File([await file.arrayBuffer()], file.name, { type: file.type })
+  //   const imageRoot = await w3s.put([imageFile], { name: file.name })
 
-    const metadata = JSON.stringify({
-      decimals: 0,
-      name: formData.assetName,
-      unitName: formData.assetUnitName,
-      image: `ipfs://${imageRoot}/${file.name}`,
-      image_mimetype: file.type,
-      properties: {},
-    })
+  //   const metadata = JSON.stringify({
+  //     decimals: 0,
+  //     name: CharityFormData.assetName,
+  //     unitName: CharityFormData.assetUnitName,
+  //     image: `ipfs://${imageRoot}/${file.name}`,
+  //     image_mimetype: file.type,
+  //     properties: {},
+  //   })
 
-    const metadataFile = new File([metadata], 'metadata.json', { type: 'text/plain' })
-    const metadataRoot = await w3s.put([metadataFile], { name: 'metadata.json' })
+  //   const metadataFile = new File([metadata], 'metadata.json', { type: 'text/plain' })
+  //   const metadataRoot = await w3s.put([metadataFile], { name: 'metadata.json' })
 
-    return metadataRoot
-  }
+  //   return metadataRoot
+  // }
 
-  // store user form input to formData
+  // store user form input to CharityFormData
   const handleInputChange = (e: { target: { id: any; value: any } }) => {
     const { id, value } = e.target
-    setFormData((prevFormData) => ({ ...prevFormData, [id]: value }))
+    setCharityFormData((prevCharityFormData) => ({ ...prevCharityFormData, [id]: value }))
   }
 
-  // store user charity image file upload to formData
+  // store user charity image file upload to CharityFormData
   const handleCharityFileChange = (e: { target: { files: FileList | null } }) => {
     const file = e.target.files?.[0]
     if (file) {
-      setFormData((prevFormData) => ({ ...prevFormData, charityImage: file }))
+      setCharityFormData((prevCharityFormData) => ({ ...prevCharityFormData, charityImage: file }))
       const reader = new FileReader()
       reader.onload = () => {
-        setFormData((prevFormData) => ({ ...prevFormData, charityImageUrl: reader.result as string }))
+        setCharityFormData((prevCharityFormData) => ({ ...prevCharityFormData, charityImageUrl: reader.result as string }))
       }
       reader.readAsDataURL(file)
     }
   }
 
-  // store user nft image file upload to formData
+  // store user nft image file upload to CharityFormData
   const handleNftFileChange = (e: { target: { files: FileList | null } }) => {
     const file = e.target.files?.[0]
     if (file) {
-      setFormData((prevFormData) => ({ ...prevFormData, nftImage: file }))
+      setCharityFormData((prevCharityFormData) => ({ ...prevCharityFormData, nftImage: file }))
       const reader = new FileReader()
       reader.onload = () => {
-        setFormData((prevFormData) => ({ ...prevFormData, nftImageUrl: reader.result as string }))
+        setCharityFormData((prevCharityFormData) => ({ ...prevCharityFormData, nftImageUrl: reader.result as string }))
       }
       reader.readAsDataURL(file)
     }
@@ -184,13 +240,19 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
       suggestedParams: sp,
     })
 
-    const metadataRoot = await imageToArc3(formData.nftImage).catch((e: Error) => {
+    if (!CharityFormData.nftImage || !CharityFormData.charityImage) {
+      enqueueSnackbar('Please connect wallet first', { variant: 'warning' })
+      setLoading(false)
+      return
+    }
+
+    const metadataRoot = await imageToArc3(CharityFormData.nftImage).catch((e: Error) => {
       enqueueSnackbar(`Error Bootstraping the contract: ${e.message}`, { variant: 'error' })
       setLoading(false)
       return
     })
 
-    await imageToArc3(formData.charityImage).catch((e: Error) => {
+    await imageToArc3(CharityFormData.charityImage).catch((e: Error) => {
       enqueueSnackbar(`Error Bootstraping the contract: ${e.message}`, { variant: 'error' })
       setLoading(false)
       return
@@ -200,14 +262,14 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
     const bootstrapOutput = await appClient
       .bootstrap(
         {
-          title: formData.title,
-          detail: formData.detail,
-          goal: Number(formData.goal) * 1e6,
-          minDonation: Number(formData.minDonate) * 1e6,
+          title: CharityFormData.title,
+          detail: CharityFormData.detail,
+          goal: Number(CharityFormData.goal) * 1e6,
+          minDonation: Number(CharityFormData.minDonate) * 1e6,
           mbrPay: { transaction: payMbrTxn, signer: signingAccount },
-          assetName: formData.assetName,
-          unitName: formData.assetUnitName,
-          nftAmount: Number(formData.nftAmount),
+          assetName: CharityFormData.assetName,
+          unitName: CharityFormData.assetUnitName,
+          nftAmount: Number(CharityFormData.nftAmount),
           assetUrl: `ipfs://${metadataRoot}/metadata.json#arc3`,
         },
         { sendParams: { fee: algokit.transactionFees(2) } },
@@ -226,22 +288,27 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
       return
     }
 
-    setFormData((prevFormData) => ({ ...prevFormData, appID: Number(app.appId), nftID: rewardNftID, organizer_address: activeAddress }))
+    setCharityFormData((prevCharityFormData) => ({
+      ...prevCharityFormData,
+      appID: Number(app.appId),
+      nftID: rewardNftID,
+      organizer_address: activeAddress,
+    }))
   }
 
-  // Using useEffect to wait for formData to be updated and then add the formData to the submissions array in App.tsx
+  // Using useEffect to wait for CharityFormData to be updated and then add the CharityFormData to the submissions array in App.tsx
   useEffect(() => {
-    if (isFirstRender.current || formData.appID === 0 || formData.nftID === 0) {
+    if (isFirstRender.current || CharityFormData.appID === 0 || CharityFormData.nftID === 0) {
       isFirstRender.current = false
       return
     }
 
-    console.log('formData after App Creation: ', formData)
-    onFormSubmit(formData)
+    console.log('CharityFormData after App Creation: ', CharityFormData)
+    onFormSubmit(CharityFormData)
     enqueueSnackbar(`Charity Successfully Created!`, { variant: 'success' })
 
-    // Reset the formData
-    setFormData({
+    // Reset the CharityFormData
+    setCharityFormData({
       title: '',
       detail: '',
       goal: 0,
@@ -258,7 +325,7 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
       organizer_address: '',
     })
     setLoading(false)
-  }, [formData.appID, formData.nftID])
+  }, [CharityFormData.appID, CharityFormData.nftID])
 
   //################## Withdraw Funds Feature ##################
 
@@ -352,6 +419,13 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
   return (
     <div className="flex justify-center items-center h-screen w-screen mt-10">
       <div className="form-control mx-auto py-8 text-center max-w-lg mt-10">
+        {/* <button
+          className="btn join-item rounded-r bg-green-500 border-none hover:bg-green-600 shadow-md transition-colors duration-300"
+          onClick={testPinata}
+          disabled={loading}
+        >
+          test Pinata
+        </button> */}
         {activeAddress === currentFundraiser?.organizer_address && (
           <div className="form-control max-w-lg">
             <h1 className="text-2xl font-bold mb-4 mt-10">Withdraw Funds</h1>
@@ -377,7 +451,7 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
               placeholder="Type here"
               className="input input-bordered w-full rounded"
               id="title"
-              value={formData.title}
+              value={CharityFormData.title}
               onChange={handleInputChange}
             />
           </div>
@@ -391,7 +465,7 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
                 placeholder="ALGO"
                 className="input input-bordered rounded-l w-3/4"
                 id="goal"
-                value={formData.goal}
+                value={CharityFormData.goal}
                 onChange={handleInputChange}
               />
               <span className="flex items-center  border border-l-0 border-r rounded-r border-neutral-300 px-3 py-[0.25rem] text-center text-base bg-gray-200 text-gray-600 font-semibold">
@@ -409,7 +483,7 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
                 placeholder="ALGO"
                 className="input input-bordered rounded-l w-3/4"
                 id="minDonate"
-                value={formData.minDonate}
+                value={CharityFormData.minDonate}
                 onChange={handleInputChange}
               />
               <span className="flex items-center  border border-l-0 border-r rounded-r border-neutral-300 px-3 py-[0.25rem] text-center text-base bg-gray-200 text-gray-600 font-semibold">
@@ -425,7 +499,7 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
               className="textarea textarea-bordered h-24 rounded"
               placeholder="Describe what the charity is about"
               id="detail"
-              value={formData.detail}
+              value={CharityFormData.detail}
               onChange={handleInputChange}
             ></textarea>
           </div>
@@ -444,7 +518,7 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
               placeholder="Type here"
               className="input input-bordered w-full rounded"
               id="assetName"
-              value={formData.assetName}
+              value={CharityFormData.assetName}
               onChange={handleInputChange}
             />
           </div>
@@ -457,7 +531,7 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
               placeholder="Type here"
               className="input input-bordered w-full rounded"
               id="assetUnitName"
-              value={formData.assetUnitName}
+              value={CharityFormData.assetUnitName}
               onChange={handleInputChange}
             />
           </div>
@@ -470,7 +544,7 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
               placeholder="Type here"
               className="input input-bordered w-full rounded"
               id="nftAmount"
-              value={formData.nftAmount}
+              value={CharityFormData.nftAmount}
               onChange={handleInputChange}
             />
           </div>

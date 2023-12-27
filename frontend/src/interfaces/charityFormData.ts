@@ -1,4 +1,4 @@
-export interface FormData {
+export interface CharityFormData {
   title: string
   detail: string
   goal: number
