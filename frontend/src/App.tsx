@@ -8,7 +8,7 @@ import { SnackbarProvider } from 'notistack'
 import { useState } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Navbar } from './components/Navbar'
-import { FormData } from './interfaces/formData'
+import { CharityFormData } from './interfaces/CharityFormData'
 import { Create } from './pages/Create'
 import { Home } from './pages/Home'
 import { getAlgodConfigFromViteEnvironment } from './utils/network/getAlgoClientConfigs'
@@ -30,13 +30,13 @@ if (import.meta.env.VITE_ALGOD_NETWORK === '') {
 export default function App() {
   const [submissions, setSubmissions] = useState<any>([])
 
-  const handleFormSubmit = (formData: FormData) => {
-    const newSubmission = formData
+  const handleFormSubmit = (CharityFormData: CharityFormData) => {
+    const newSubmission = CharityFormData
     setSubmissions((prevSubmissions: any) => [...prevSubmissions, newSubmission])
   }
 
-  const handleRemoveFundraiser = (submission: FormData) => {
-    const newSubmissions = submissions.filter((s: FormData) => s !== submission)
+  const handleRemoveFundraiser = (submission: CharityFormData) => {
+    const newSubmissions = submissions.filter((s: CharityFormData) => s !== submission)
     setSubmissions(newSubmissions)
   }
 

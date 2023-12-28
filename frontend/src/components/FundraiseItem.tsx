@@ -5,13 +5,13 @@ import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useEffect, useRef, useState } from 'react'
 import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
-import { FormData } from '../interfaces/formData'
+import { CharityFormData } from '../interfaces/CharityFormData'
 import { getAlgodClient } from '../utils/setupClients'
 
 import { DonationOptinPopup } from './DonationOptinPopup'
 
 interface FundraiseItemProps {
-  submission: FormData
+  submission: CharityFormData
 }
 
 export function FundraiseItem({ submission }: FundraiseItemProps) {

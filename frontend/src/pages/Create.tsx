@@ -1,10 +1,10 @@
 import { StartCreate } from '../components/StartCreate'
-import { FormData } from '../interfaces/formData'
+import { CharityFormData } from '../interfaces/CharityFormData'
 
 interface CreateComponentProps {
-  onFormSubmit: (formData: FormData) => void
-  handleRemoveFundraiser: (submission: FormData) => void
-  submissions: FormData[]
+  onFormSubmit: (CharityFormData: CharityFormData) => void
+  handleRemoveFundraiser: (submission: CharityFormData) => void
+  submissions: CharityFormData[]
 }
 
 export function Create({ onFormSubmit, handleRemoveFundraiser, submissions }: CreateComponentProps) {
