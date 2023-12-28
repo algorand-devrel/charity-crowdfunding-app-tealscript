@@ -6,11 +6,15 @@ from algokit_utils import (
 )
 from algosdk.v2client.algod import AlgodClient
 
-from smart_contracts.charity_crowdfunding import contract as charity_crowdfunding_contract
+from smart_contracts.charity_crowdfunding import (
+    contract as charity_crowdfunding_contract,
+)
 
 
 @pytest.fixture(scope="session")
-def charity_crowdfunding_app_spec(algod_client: AlgodClient) -> ApplicationSpecification:
+def charity_crowdfunding_app_spec(
+    algod_client: AlgodClient,
+) -> ApplicationSpecification:
     return charity_crowdfunding_contract.app.build(algod_client)
 
 
@@ -29,6 +33,8 @@ def charity_crowdfunding_client(
 
 
 def test_says_hello(charity_crowdfunding_client: ApplicationClient) -> None:
-    result = charity_crowdfunding_client.call(charity_crowdfunding_contract.hello, name="World")
+    result = charity_crowdfunding_client.call(
+        charity_crowdfunding_contract.hello, name="World"
+    )
 
     assert result.return_value == "Hello, World"
