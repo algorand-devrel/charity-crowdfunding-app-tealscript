@@ -11,13 +11,13 @@ export function Navbar() {
     setOpenWalletModal(!openWalletModal)
   }
   return (
-    <div className="navbar bg-base-100">
+    <div className="navbar bg-base-200 h-16">
       <div className="navbar-start">
         <Link to="/" className="btn btn-ghost normal-case text-xl">
           AlgoCharity
         </Link>
       </div>
-      <div className="navbar-center hidden lg:flex">
+      <div className="navbar-center">
         <ul className="menu menu-horizontal px-1">
           <li>
             <Link to="/">Home</Link>
@@ -29,8 +29,7 @@ export function Navbar() {
       </div>
       <div className="navbar-end">
         <button
-          data-test-id="connect-wallet"
-          className="btn m-2 bg-green-500 rounded border-none hover:bg-green-600 shadow-md transition-colors duration-300"
+          className="btn m-2 bg-green-500 rounded border-none hover:bg-green-600 transition-colors duration-300"
           onClick={toggleWalletModal}
         >
           <p className="text-white">{activeAddress ? 'Disconnect' : 'Connect Wallet'} </p>

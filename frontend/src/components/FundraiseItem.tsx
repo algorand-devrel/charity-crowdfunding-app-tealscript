@@ -5,7 +5,7 @@ import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useEffect, useRef, useState } from 'react'
 import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
-import { CharityFormData } from '../interfaces/CharityFormData'
+import { CharityFormData } from '../interfaces/charityFormData'
 import { getAlgodClient } from '../utils/setupClients'
 
 import { DonationOptinPopup } from './DonationOptinPopup'
@@ -127,8 +127,8 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
   }, [openOptinModal])
 
   return (
-    <div className="card w-96 bg-base-100 shadow-xl rounded-md mx-auto my-auto overflow-hidden h-full">
-      <figure className="overflow-hidden h-40">
+    <div className="card shadow-xl rounded-md">
+      <figure className="h-40">
         <img src={submission.charityImageUrl} alt="Fundraiser" />
       </figure>
       <div className="card-body p-4">
@@ -157,16 +157,16 @@ export function FundraiseItem({ submission }: FundraiseItemProps) {
           </button>
         )}
         <p> Minimum Donation: {submission.minDonate} ALGO</p>
-        <div className="card-actions join justify-end">
+        <div className="flex flex-row">
           <input
-            className="input input-bordered join-item"
+            className="input input-bordered w-3/4"
             placeholder="Donation Amount in ALGOs"
             onChange={handleDonationChange}
             value={donationAmount == 0 ? '' : donationAmount}
             type="number"
           />
           <button
-            className="btn join-item rounded-r bg-green-500 border-none hover:bg-green-600 shadow-md transition-colors duration-300"
+            className="btn w-1/4 rounded-r bg-green-500 border-none hover:bg-green-600 text-white shadow-md transition-colors duration-300"
             onClick={handleDonateClick}
             disabled={loading}
           >

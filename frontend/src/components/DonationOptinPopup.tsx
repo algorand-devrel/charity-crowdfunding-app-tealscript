@@ -4,7 +4,7 @@ import { useWallet } from '@txnlab/use-wallet'
 import algosdk from 'algosdk'
 import { useSnackbar } from 'notistack'
 import { useState } from 'react'
-import { CharityFormData } from '../interfaces/CharityFormData'
+import { CharityFormData } from '../interfaces/charityFormData'
 import { getAlgodClient } from '../utils/setupClients'
 
 interface DonationPopupProps {
@@ -59,12 +59,17 @@ export function DonationOptinPopup({ openModal, closeModal, submission }: Donati
     <dialog className={`modal ${openModal ? 'modal-open' : ''}`}>
       <form method="dialog" className="modal-box">
         <p>Do you want to opt in to the reward NFT to receive the NFT for donating to this charity?</p>
-        <div className="button-container">
-          <button className="btn bg-green-600 border-1  m-2" onClick={handleYesClick} disabled={loading}>
+        <p className="font-bold">(Minimum balance increases by 0.1 ALGO)</p>
+        <div className="flex justify-center gap-40 pt-5">
+          <button
+            className="btn w-1/4 rounded-r bg-green-500 border-none hover:bg-green-600 text-white shadow-md transition-colors duration-300"
+            onClick={handleYesClick}
+            disabled={loading}
+          >
             {loading ? <span className="loading loading-spinner" /> : 'Yes'}
           </button>
           <button
-            className="btn bg-red-500 border-1  m-2"
+            className="btn w-1/4 rounded-r bg-red-500 border-none hover:bg-red-600 text-white shadow-md transition-colors duration-300"
             onClick={() => {
               closeModal()
             }}

@@ -3,12 +3,15 @@ import { TransactionSignerAccount } from '@algorandfoundation/algokit-utils/type
 import { AppDetails } from '@algorandfoundation/algokit-utils/types/app-client'
 import { useWallet } from '@txnlab/use-wallet'
 import algosdk from 'algosdk'
+import { getAlgodClient, getIndexerClient } from '../utils/setupClients'
+
 import { useSnackbar } from 'notistack'
+
 import { useEffect, useRef, useState } from 'react'
 import { CharityCrowdfundingAppClient } from '../contracts/charityCrowdfundingApp'
-import { CharityFormData } from '../interfaces/CharityFormData'
+import { CharityFormData } from '../interfaces/charityFormData'
+
 import { pinFileToIPFS, pinJSONToIPFS } from '../utils/pinata'
-import { getAlgodClient, getIndexerClient } from '../utils/setupClients'
 
 /**
  * Interface
@@ -333,142 +336,125 @@ export function StartCreate({ onFormSubmit, handleRemoveFundraiser, submissions 
   }
 
   return (
-    <div className="flex justify-center items-center h-screen w-screen mt-10">
-      <div className="form-control mx-auto py-8 text-center max-w-lg mt-10">
-        {activeAddress === currentFundraiser?.organizer_address && (
-          <div className="form-control max-w-lg">
-            <h1 className="text-2xl font-bold mb-4 mt-10">Withdraw Funds</h1>
-            <h2 className="mb-4 max-w-lg">Total Raised Funds: {currentFundraiserBalance - 0.2} ALGOs</h2>
-            <button
-              className="btn join-item rounded-r bg-green-500 border-none hover:bg-green-600 shadow-md transition-colors duration-300"
-              onClick={handleWithdraw}
-              disabled={loading}
-            >
-              {loading ? <span className="loading loading-spinner" /> : <p className="text-white">Withdraw funds</p>}
-            </button>
-          </div>
-        )}
-
-        <h1 className="text-2xl font-bold mb-4 mt-4">Charity Details</h1>
-        <div className="flex flex-wrap -mx-2 mb-4">
-          <div className=" form-control w-full md:w-1/ px-2 mb-4">
-            <label className="label">
-              <span className="label-text">Charity Title</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Type here"
-              className="input input-bordered w-full rounded"
-              id="title"
-              value={CharityFormData.title}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-control flex w-full md:w-1/2 px-2 mb-4">
-            <label className="label">
-              <span className="label-text">Fund Goal</span>
-            </label>
-            <div className="relative flex">
-              <input
-                type="number"
-                placeholder="ALGO"
-                className="input input-bordered rounded-l w-3/4"
-                id="goal"
-                value={CharityFormData.goal}
-                onChange={handleInputChange}
-              />
-              <span className="flex items-center  border border-l-0 border-r rounded-r border-neutral-300 px-3 py-[0.25rem] text-center text-base bg-gray-200 text-gray-600 font-semibold">
-                ALGO
-              </span>
-            </div>
-          </div>
-          <div className="form-control flex w-full md:w-1/2 px-2 mb-4">
-            <label className="label">
-              <span className="label-text">Minimum Donation</span>
-            </label>
-            <div className="relative flex">
-              <input
-                type="number"
-                placeholder="ALGO"
-                className="input input-bordered rounded-l w-3/4"
-                id="minDonate"
-                value={CharityFormData.minDonate}
-                onChange={handleInputChange}
-              />
-              <span className="flex items-center  border border-l-0 border-r rounded-r border-neutral-300 px-3 py-[0.25rem] text-center text-base bg-gray-200 text-gray-600 font-semibold">
-                ALGO
-              </span>
-            </div>
-          </div>
-          <div className="form-control w-full md:w-1/ px-2 mb-4">
-            <label className="label">
-              <span className="label-text">Charity Description</span>
-            </label>
-            <textarea
-              className="textarea textarea-bordered h-24 rounded"
-              placeholder="Describe what the charity is about"
-              id="detail"
-              value={CharityFormData.detail}
-              onChange={handleInputChange}
-            ></textarea>
-          </div>
-          <div className="form-control w-full md:w-1/2 px-2 mb-4">
-            <input type="file" className="file-input rounded" id="image" onChange={handleCharityFileChange} />
-          </div>
+    <div className="form-control w-screen  mx-auto text-center max-w-lg">
+      {activeAddress != undefined && activeAddress === currentFundraiser?.organizer_address && (
+        <div className="form-control max-w-lg">
+          <h1 className="text-2xl font-bold mb-4 mt-10">Withdraw Funds</h1>
+          <h2 className="mb-4 max-w-lg">Total Raised Funds: {currentFundraiserBalance - 0.2} ALGOs</h2>
+          <button
+            className="btn join-item rounded-r bg-green-500 border-none hover:bg-green-600 shadow-md transition-colors duration-300"
+            onClick={handleWithdraw}
+            disabled={loading}
+          >
+            {loading ? <span className="loading loading-spinner" /> : <p className="text-white">Withdraw funds</p>}
+          </button>
         </div>
-        <h1 className="text-2xl font-bold mb-4">Proof of Donation NFT Details</h1>
-        <div className="flex flex-wrap -mx-2 mb-4">
-          <div className="form-control w-full md:w-1/ px-2 mb-4">
-            <label className="label">
-              <span className="label-text">Reward NFT Name</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Type here"
-              className="input input-bordered w-full rounded"
-              id="assetName"
-              value={CharityFormData.assetName}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-control w-full md:w-1/2 px-2 mb-4">
-            <label className="label">
-              <span className="label-text">NFT Unit Name</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Type here"
-              className="input input-bordered w-full rounded"
-              id="assetUnitName"
-              value={CharityFormData.assetUnitName}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-control w-full md:w-1/2 px-2 mb-4">
-            <label className="label">
-              <span className="label-text">Total Amount</span>
-            </label>
+      )}
+      <h1 className="text-2xl font-bold mb-4 mt-4">Charity Details</h1>
+      <div className="flex flex-wrap mb-4">
+        <div className="w-full mb-4">
+          <p className="flex justify-start">Charity Title</p>
+          <input
+            type="text"
+            placeholder="Type name of the charity here"
+            className="input input-bordered w-full rounded"
+            id="title"
+            value={CharityFormData.title}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className=" md:w-1/2 pr-1 mb-4">
+          <p className="flex justify-start">Fund Goal</p>
+          <div className="flex">
             <input
               type="number"
-              placeholder="Type here"
-              className="input input-bordered w-full rounded"
-              id="nftAmount"
-              value={CharityFormData.nftAmount}
+              placeholder="ALGO"
+              className="input input-bordered rounded-l w-3/4"
+              id="goal"
+              value={CharityFormData.goal}
               onChange={handleInputChange}
             />
-          </div>
-          <div className="form-control w-full md:w-1/2 px-2 mb-4">
-            <input type="file" className="file-input rounded" id="image" onChange={handleNftFileChange} />
+            <span className="flex items-center border-l-0 border-r rounded-r border-neutral-300 px-3 bg-gray-200 text-gray-600 font-semibold">
+              ALGO
+            </span>
           </div>
         </div>
-        <button
-          className="btn join-item rounded-r bg-green-500 border-none hover:bg-green-600 shadow-md transition-colors duration-300"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? <span className="loading loading-spinner" /> : <p className="text-white">Create Fundraiser</p>}
-        </button>
+        <div className="md:w-1/2 pl-1 mb-4">
+          <p className="flex justify-start">Minimum Donation</p>
+          <div className=" flex">
+            <input
+              type="number"
+              placeholder="ALGO"
+              className="input input-bordered rounded-l w-3/4"
+              id="minDonate"
+              value={CharityFormData.minDonate}
+              onChange={handleInputChange}
+            />
+            <span className="flex items-center border-l-0 border-r rounded-r border-neutral-300 px-3 bg-gray-200 text-gray-600 font-semibold">
+              ALGO
+            </span>
+          </div>
+        </div>
+        <div className="w-full mb-4">
+          <p className="flex justify-start">Charity Description</p>
+          <textarea
+            className="textarea textarea-bordered w-full h-24 rounded"
+            placeholder="Describe what the charity is about"
+            id="detail"
+            value={CharityFormData.detail}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="flex justify-start w-full mb-4">
+          <input type="file" className="file-input rounded" id="image" onChange={handleCharityFileChange} />
+        </div>
       </div>
+      <h1 className="text-2xl font-bold mb-4">Proof of Donation NFT Details</h1>
+      <div className="flex flex-wrap mb-4">
+        <div className="w-full mb-4">
+          <p className="flex justify-start">Reward NFT Name</p>
+          <input
+            type="text"
+            placeholder="Type here"
+            className="input input-bordered rounded w-full"
+            id="assetName"
+            value={CharityFormData.assetName}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="md:w-1/2 pr-1 mb-4">
+          <p className="flex justify-start">NFT Unit Name</p>
+          <input
+            type="text"
+            placeholder="Type here"
+            className="input input-bordered w-full rounded"
+            id="assetUnitName"
+            value={CharityFormData.assetUnitName}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="md:w-1/2 pl-1 mb-4">
+          <p className="flex justify-start">Total Amount</p>
+          <input
+            type="number"
+            placeholder="Type here"
+            className="input input-bordered w-full rounded"
+            id="nftAmount"
+            value={CharityFormData.nftAmount}
+            onChange={handleInputChange}
+          />
+        </div>
+        <div className="flex justify-start w-full mb-4">
+          <input type="file" className="file-input rounded" id="image" onChange={handleNftFileChange} />
+        </div>
+      </div>
+      <button
+        className="btn rounded bg-green-500 border-none hover:bg-green-600 shadow-md transition-colors duration-300"
+        onClick={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? <span className="loading loading-spinner" /> : <p className="text-white">Create Fundraiser</p>}
+      </button>
     </div>
   )
 }
